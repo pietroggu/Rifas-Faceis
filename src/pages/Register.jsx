@@ -31,36 +31,21 @@ function Register() {
         return novosErros;
     }
 
-    async function handleLogin(e) {
-        e.preventDefault();
+    async function handleRegister(e) {
+    
+    e.preventDefault();
 
-        const validacao = validar();
+    // 🔥 só simula um loading
+    setLoading(true);
 
-        if (Object.keys(validacao).length > 0) {
-            setErros(validacao);
-            return;
-        }
-
-        setErros({});
-        setErroGeral("");
-        setLoading(true);
-
-        try {
-            const response = await AuthService.login(email, senha);
-
-            AuthService.saveAuth(response);
-
-            navigate("/home");
-        } catch (error) {
-            setErroGeral(error.message);
-        } finally {
-            setLoading(false);
-        }
-    }
+    setTimeout(() => {
+        navigate("/"); // volta pro login
+    }, 500);
+}
 
     return (
         <div style={styles.container}>
-            <form onSubmit={handleLogin} style={styles.card}>
+            <form onSubmit={handleRegister} style={styles.card}>
                 
                 {/* 🔥 LOGO + BRAND */}
                 <div style={styles.header}>

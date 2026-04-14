@@ -20,6 +20,7 @@ function Input({ label, type = "text", value, onChange, error }) {
                 value={value}
                 onChange={onChange}
                 style={{
+                    height: "30px",
                     width: "90%",
                     padding: "5px",
                     borderRadius: "5px",
