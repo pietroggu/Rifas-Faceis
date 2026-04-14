@@ -85,8 +85,10 @@ const styles = {
     },
     input: {
         width: "100%",
-        padding: "8px",
-        margin: "8px 0"
+        height: "25px",
+        marginTop:"10px",
+        padding: "0px",
+        
     },
     actions: {
         display: "flex",
