@@ -114,7 +114,7 @@ const styles = {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "linear-gradient(135deg, #4facfe, #00f2fe)"
+        background: "#3B82F6"
     },
     card: {
         background: "#eaebed",
@@ -153,7 +153,7 @@ const styles = {
     button: {
         width: "100%",
         padding: "12px",
-        background: "#4facfe",
+        background: "#2563EB",
         color: "#eaebed",
         border: "none",
         borderRadius: "6px",
