@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/Input";
+import AuthService from "../services/authService";
 
 function Login() {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [erros, setErros] = useState({});
     const [loading, setLoading] = useState(false);
+    const [erroGeral, setErroGeral] = useState("");
 
-    // Hook de navegação
     const navigate = useNavigate();
 
     function validar() {
@@ -23,7 +24,7 @@ function Login() {
         if (!senha) {
             novosErros.senha = "Senha é obrigatória";
         } else if (senha.length < 6) {
-            novosErros.senha = "Senha deve ter pelo menos 6 caracteres";
+            novosErros.senha = "Mínimo 6 caracteres";
         }
 
         return novosErros;
@@ -40,20 +41,17 @@ function Login() {
         }
 
         setErros({});
+        setErroGeral("");
         setLoading(true);
 
         try {
-            // Simulação de login
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const response = await AuthService.login(email, senha);
 
-            // Aqui você normalmente salvaria o token
-            localStorage.setItem("auth", "true");
+            AuthService.saveAuth(response);
 
-            // 🔥 REDIRECIONAMENTO
             navigate("/home");
-
         } catch (error) {
-            alert("Erro ao fazer login");
+            setErroGeral(error.message);
         } finally {
             setLoading(false);
         }
@@ -62,7 +60,19 @@ function Login() {
     return (
         <div style={styles.container}>
             <form onSubmit={handleLogin} style={styles.card}>
-                <h2 style={{ textAlign: "center" }}>Login</h2>
+                
+                {/* 🔥 LOGO + BRAND */}
+                <div style={styles.header}>
+                    <div style={styles.logo}>🎟️</div>
+                    <h1 style={styles.title}>Rifas App</h1>
+                    <p style={styles.subtitle}>Gerencie e participe de rifas</p>
+                </div>
+
+                {erroGeral && (
+                    <div style={styles.errorBox}>
+                        {erroGeral}
+                    </div>
+                )}
 
                 <Input
                     label="Email"
@@ -94,23 +104,49 @@ const styles = {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "#f5f5f5"
+        background: "linear-gradient(135deg, #4facfe, #00f2fe)"
     },
     card: {
         background: "#fff",
-        padding: "30px",
-        borderRadius: "10px",
-        width: "300px",
-        boxShadow: "0 0 10px rgba(0,0,0,0.1)"
+        padding: "40px",
+        borderRadius: "12px",
+        width: "320px",
+        boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+        animation: "fadeIn 0.3s ease-in-out"
+    },
+    header: {
+        textAlign: "center",
+        marginBottom: "20px"
+    },
+    logo: {
+        fontSize: "40px"
+    },
+    title: {
+        margin: "10px 0 5px",
+        fontSize: "24px"
+    },
+    subtitle: {
+        fontSize: "12px",
+        color: "#666"
+    },
+    errorBox: {
+        background: "#ffe6e6",
+        color: "#cc0000",
+        padding: "10px",
+        borderRadius: "5px",
+        marginBottom: "10px",
+        fontSize: "14px"
     },
     button: {
         width: "100%",
-        padding: "10px",
-        background: "#007bff",
+        padding: "12px",
+        background: "#4facfe",
         color: "#fff",
         border: "none",
-        borderRadius: "5px",
-        cursor: "pointer"
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontWeight: "bold",
+        transition: "0.2s"
     }
 };
 
