@@ -50,12 +50,11 @@ const styles = {
     marginTop: "auto"
   },
   logo: {
-        margin: "0px",
-        width: "140px",
-        height: "140px",
+        width: "200px",
+        height: "auto",
         objectFit: "contain",
-        margin: "0 auto"
-        
+        margin: "0px auto",
+        marginBottom: "25px"
     },
 };
 
