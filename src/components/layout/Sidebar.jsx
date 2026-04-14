@@ -10,10 +10,14 @@ function Sidebar() {
       <h2 style={styles.logo}>🎟 Rifa</h2>
 
       <nav style={styles.nav}>
-        <Link style={styles.link} to="/">🏠 Home</Link>
-        <Link style={styles.link} to="/rifas">🎯 Rifas</Link>
-        <Link style={styles.link} to="/login">🔐 Login</Link>
+        <Link style={styles.link} to="/home">🏠 Home</Link>
+        <Link style={styles.link} to="/home">🎟 Minhas rifas</Link>
+        <Link style={styles.link} to="/home">🆘 Ajuda</Link>
+
       </nav>
+      
+      <Link style={styles.link1}to="/home">🎲 Meus dados </Link>
+      <Link style={styles.link} to="">🔐 Logout</Link>
     </aside>
   );
 }
@@ -21,7 +25,7 @@ function Sidebar() {
 const styles = {
   sidebar: {
     width: "240px",
-    background: "#111",
+    background: "#3B82F6",
     color: "#fff",
     padding: "20px",
     display: "flex",
@@ -34,11 +38,19 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "15px",
+    color: "#fff"
   },
   link: {
-    color: "#ccc",
+    color: "#fff",
     textDecoration: "none",
-    fontSize: "16px",
+    fontSize: "19px",
+  },
+  link1: {
+    color: "#fff",
+    marginBottom:"3px",
+    textDecoration: "none",
+    fontSize: "19px",
+    marginTop: "auto"
   },
 };
 

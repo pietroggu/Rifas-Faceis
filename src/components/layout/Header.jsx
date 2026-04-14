@@ -6,11 +6,8 @@ import React from "react";
 function Header() {
   return (
     <header style={styles.header}>
-      <h3>Dashboard</h3>
+      <h3>Home</h3>
 
-      <div>
-        <span style={styles.user}>👤 Usuário</span>
-      </div>
     </header>
   );
 }
@@ -18,12 +15,13 @@ function Header() {
 const styles = {
   header: {
     height: "60px",
-    background: "#fff",
+    background: "#2563EB",
     borderBottom: "1px solid #ddd",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     padding: "0 20px",
+    color: "#ffffff"
   },
   user: {
     fontSize: "14px",

@@ -6,7 +6,7 @@ import React from "react";
 function Footer() {
   return (
     <footer style={styles.footer}>
-      <p>© 2026 Rifa App</p>
+      <p>© 2026 Rifa Fácil</p>
     </footer>
   );
 }

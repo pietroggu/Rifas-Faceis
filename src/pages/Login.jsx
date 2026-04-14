@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import AuthService from "../services/authService";
+import logo from "../assets/logo.jpeg";
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -63,8 +64,7 @@ function Login() {
                 
                 {/* 🔥 LOGO + BRAND */}
                 <div style={styles.header}>
-                    <div style={styles.logo}>🎟️</div>
-                    <h1 style={styles.title}>Rifas App</h1>
+                    <img src={logo} alt="Logo" style={styles.logo} />
                     <p style={styles.subtitle}>Gerencie e participe de rifas</p>
                 </div>
 
@@ -117,7 +117,7 @@ const styles = {
         background: "linear-gradient(135deg, #4facfe, #00f2fe)"
     },
     card: {
-        background: "#fff",
+        background: "#eaebed",
         padding: "40px",
         borderRadius: "12px",
         width: "320px",
@@ -129,7 +129,9 @@ const styles = {
         marginBottom: "20px"
     },
     logo: {
-        fontSize: "40px"
+        width: "100px",
+        height: "100px",
+        objectFit: "contain"
     },
     title: {
         margin: "10px 0 5px",
@@ -151,7 +153,7 @@ const styles = {
         width: "100%",
         padding: "12px",
         background: "#4facfe",
-        color: "#fff",
+        color: "#eaebed",
         border: "none",
         borderRadius: "6px",
         cursor: "pointer",
