@@ -1,13 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import logo from "../../assets/logo.png";
 /**
  * Sidebar de navegação
  */
 function Sidebar() {
   return (
     <aside style={styles.sidebar}>
-      <h2 style={styles.logo}>🎟 Rifa</h2>
+      <img src={logo} alt="Logo" style={styles.logo} ></img>
 
       <nav style={styles.nav}>
         <Link style={styles.link} to="/home">🏠 Home</Link>
@@ -31,9 +31,6 @@ const styles = {
     display: "flex",
     flexDirection: "column",
   },
-  logo: {
-    marginBottom: "30px",
-  },
   nav: {
     display: "flex",
     flexDirection: "column",
@@ -52,6 +49,14 @@ const styles = {
     fontSize: "19px",
     marginTop: "auto"
   },
+  logo: {
+        margin: "0px",
+        width: "140px",
+        height: "140px",
+        objectFit: "contain",
+        margin: "0 auto"
+        
+    },
 };
 
 export default Sidebar;

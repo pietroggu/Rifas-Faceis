@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import AuthService from "../services/authService";
-import logo from "../assets/logo.jpeg";
+import logo from "../assets/logo.png";
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -65,7 +65,7 @@ function Login() {
                 {/* 🔥 LOGO + BRAND */}
                 <div style={styles.header}>
                     <img src={logo} alt="Logo" style={styles.logo} />
-                    <p style={styles.subtitle}>Gerencie e participe de rifas</p>
+                    <h3 className="header"> Login</h3>
                 </div>
 
                 {erroGeral && (
@@ -129,16 +129,17 @@ const styles = {
         marginBottom: "20px"
     },
     logo: {
-        width: "100px",
-        height: "100px",
-        objectFit: "contain"
+        width: "200px",
+        height: "auto",
+        objectFit: "contain",
+        margin: "0px"
     },
     title: {
         margin: "10px 0 5px",
         fontSize: "24px"
     },
     subtitle: {
-        fontSize: "12px",
+        fontSize: "15px",
         color: "#666"
     },
     errorBox: {

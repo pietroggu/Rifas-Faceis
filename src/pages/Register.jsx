@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/Input";
-import AuthService from "../services/authService";
+import logo from "../assets/logo.png";
 
 function Register() {
     const [email, setEmail] = useState("");
@@ -32,16 +32,23 @@ function Register() {
     }
 
     async function handleRegister(e) {
-    
-    e.preventDefault();
+        e.preventDefault();
 
-    // 🔥 só simula um loading
-    setLoading(true);
+        const validacao = validar();
 
-    setTimeout(() => {
-        navigate("/"); // volta pro login
-    }, 500);
-}
+        if (Object.keys(validacao).length > 0) {
+            setErros(validacao);
+            return;
+        }
+
+        setErros({});
+        setErroGeral("");
+        setLoading(true);
+
+        setTimeout(() => {
+            navigate("/"); // volta pro login
+        }, 500);
+    }
 
     return (
         <div style={styles.container}>
@@ -49,9 +56,8 @@ function Register() {
                 
                 {/* 🔥 LOGO + BRAND */}
                 <div style={styles.header}>
-                    <div style={styles.logo}>🎟️</div>
-                    <h1 style={styles.title}>Rifas App</h1>
-                    <p style={styles.subtitle}>Gerencie e participe de rifas</p>
+                    <img src={logo} alt="Logo" style={styles.logo} />
+                    <p style={styles.subtitle}>Crie sua conta para participar das rifas</p>
                 </div>
 
                 {erroGeral && (
@@ -67,12 +73,12 @@ function Register() {
                     onChange={(e) => setEmail(e.target.value)}
                     error={erros.email}
                 />
+
                 <Input
                     label="Nome"
-                    type="name"
+                    type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    
                 />
 
                 <Input
@@ -86,6 +92,18 @@ function Register() {
                 <button type="submit" disabled={loading} style={styles.button}>
                     {loading ? "Registrando..." : "Registre-se"}
                 </button>
+
+                {/* 🔥 VOLTAR PRO LOGIN */}
+                <div style={styles.registerContainer}>
+                    <span>Já tem conta? </span>
+                    <span 
+                        style={styles.registerLink}
+                        onClick={() => navigate("/")}
+                    >
+                        Entrar
+                    </span>
+                </div>
+
             </form>
         </div>
     );
@@ -101,26 +119,24 @@ const styles = {
         background: "linear-gradient(135deg, #4facfe, #00f2fe)"
     },
     card: {
-        background: "#fff",
+        background: "#eaebed",
         padding: "40px",
         borderRadius: "12px",
         width: "320px",
         boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-        animation: "fadeIn 0.3s ease-in-out"
     },
     header: {
         textAlign: "center",
         marginBottom: "20px"
     },
     logo: {
-        fontSize: "40px"
-    },
-    title: {
-        margin: "10px 0 5px",
-        fontSize: "24px"
+        width: "200px",
+        height: "auto",
+        objectFit: "contain",
+        margin: "0px"
     },
     subtitle: {
-        fontSize: "12px",
+        fontSize: "15px",
         color: "#666"
     },
     errorBox: {
@@ -135,19 +151,17 @@ const styles = {
         width: "100%",
         padding: "12px",
         background: "#4facfe",
-        color: "#fff",
+        color: "#eaebed",
         border: "none",
         borderRadius: "6px",
         cursor: "pointer",
         fontWeight: "bold",
-        transition: "0.2s"
     },
     registerContainer: {
         marginTop: "15px",
         textAlign: "center",
         fontSize: "14px"
     },
-
     registerLink: {
         color: "#4facfe",
         cursor: "pointer",
