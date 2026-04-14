@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/logo_branca.png";
 /**
  * Sidebar de navegação
  */
@@ -50,7 +50,7 @@ const styles = {
     marginTop: "auto"
   },
   logo: {
-        width: "200px",
+        width: "250px",
         height: "auto",
         objectFit: "contain",
         margin: "0px auto",
