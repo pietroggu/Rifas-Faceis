@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Componente que representa uma rifa individual
@@ -8,48 +9,38 @@ import React from "react";
  * @param {number} props.price - Preço por número
  * @param {number} props.totalNumbers - Quantidade total de números
  */
-function RaffleCard({ title, description, price, totalNumbers }) {
-  return (
-    <div style={styles.card}>
-      <h2>{title}</h2>
-      <p>{description}</p>
 
-      <div style={styles.info}>
-        <span>💰 R$ {price.toFixed(2)}</span>
-        <span>🎟 {totalNumbers} números</span>
-      </div>
+/**
+ * Card de rifa clicável
+ */
+function RaffleCard({ id, title, description, price, totalNumbers }) {
+    const navigate = useNavigate();
 
-      <button style={styles.button}>
-        Participar
-      </button>
-    </div>
-  );
+    function handleClick() {
+        // Redireciona passando o ID
+        navigate(`/rifa/${id}`);
+    }
+
+    return (
+        <div onClick={handleClick} style={styles.card}>
+            <h2>{title}</h2>
+            <p>{description}</p>
+            <p>💰 R$ {price}</p>
+            <p>🎟 {totalNumbers} números</p>
+        </div>
+    );
 }
 
 const styles = {
-  card: {
-    border: "1px solid #ddd",
-    borderRadius: "12px",
-    padding: "16px",
-    width: "280px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  info: {
-    display: "flex",
-    justifyContent: "space-between",
-    fontWeight: "bold",
-  },
-  button: {
-    padding: "10px",
-    border: "none",
-    borderRadius: "8px",
-    backgroundColor: "#4CAF50",
-    color: "#fff",
-    cursor: "pointer",
-  },
+    card: {
+        width: "250px",
+        padding: "20px",
+        borderRadius: "10px",
+        background: "#fff",
+        boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+        cursor: "pointer",
+        transition: "0.2s"
+    }
 };
 
 export default RaffleCard;
