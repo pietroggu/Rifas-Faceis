@@ -1,5 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import raffleService from "../services/raffleService";
+import NumberCard from "../components/NumberCard";
+import PurchaseModal from "../components/PurchaseModal";
 
 /**
  * Página de detalhes da rifa
@@ -7,26 +10,63 @@ import { useParams } from "react-router-dom";
 function Raffle() {
     const { id } = useParams();
 
-    // Simulação (depois vem do backend)
-    const raffle = {
-        id,
-        title: "Rifa Exemplo",
-        totalNumbers: 100,
-        soldNumbers: [2, 5, 10, 25] // números já vendidos
-    };
+    const [raffle, setRaffle] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [selectedNumber, setSelectedNumber] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
 
     /**
-     * Gera todos os números disponíveis
+     * Carrega dados da rifa
      */
-    function gerarNumeros() {
-        const numeros = [];
-
-        for (let i = 1; i <= raffle.totalNumbers; i++) {
-            numeros.push(i);
+    useEffect(() => {
+        async function fetchRaffle() {
+            try {
+                const data = await raffleService.getRaffleById(id);
+                setRaffle(data);
+            } catch (error) {
+                console.error("Erro ao carregar rifa:", error);
+                alert("Erro ao carregar rifa");
+            } finally {
+                setLoading(false);
+            }
         }
 
-        return numeros;
+        fetchRaffle();
+    }, [id]);
+
+    /**
+     * Gera números
+     */
+    function gerarNumeros() {
+        if (!raffle) return [];
+
+        return Array.from(
+            { length: raffle.totalNumbers },
+            (_, i) => i + 1
+        );
     }
+
+    /**
+     * Clique em número disponível
+     */
+    function handleNumberClick(number) {
+        setSelectedNumber(number);
+        setModalOpen(true);
+    }
+
+    /**
+     * Confirma compra
+     */
+    function handleConfirmPurchase(data) {
+        alert(
+            `Compra realizada!\nNúmero: ${data.number}\nNome: ${data.name}`
+        );
+
+        setModalOpen(false);
+    }
+
+    if (loading) return <p>Carregando...</p>;
+    if (!raffle) return <p>Rifa não encontrada</p>;
 
     const numeros = gerarNumeros();
 
@@ -36,22 +76,26 @@ function Raffle() {
 
             <div style={styles.grid}>
                 {numeros.map((num) => {
-                    const vendido = raffle.soldNumbers.includes(num);
+                    const sold = raffle.soldNumbers.includes(num);
 
                     return (
-                        <div
+                        <NumberCard
                             key={num}
-                            style={{
-                                ...styles.number,
-                                background: vendido ? "#ccc" : "#4caf50",
-                                cursor: vendido ? "not-allowed" : "pointer"
-                            }}
-                        >
-                            {num}
-                        </div>
+                            number={num}
+                            sold={sold}
+                            onClick={handleNumberClick}
+                        />
                     );
                 })}
             </div>
+
+            <PurchaseModal
+                open={modalOpen}
+                number={selectedNumber}
+                price={raffle.price}
+                onClose={() => setModalOpen(false)}
+                onConfirm={handleConfirmPurchase}
+            />
         </div>
     );
 }
@@ -67,16 +111,6 @@ const styles = {
         gap: "10px",
         justifyContent: "center",
         marginTop: "20px"
-    },
-    number: {
-        width: "50px",
-        height: "50px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: "5px",
-        color: "#fff",
-        fontWeight: "bold"
     }
 };
 
