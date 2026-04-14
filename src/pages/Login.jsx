@@ -93,6 +93,15 @@ function Login() {
                 <button type="submit" disabled={loading} style={styles.button}>
                     {loading ? "Entrando..." : "Entrar"}
                 </button>
+                <div style={styles.registerContainer}>
+                    <span>Não tem conta? </span>
+                    <span 
+                        style={styles.registerLink}
+                        onClick={() => navigate("/register")}
+                    >
+                        Registrar
+                    </span>
+                </div>
             </form>
         </div>
     );
@@ -100,6 +109,7 @@ function Login() {
 
 const styles = {
     container: {
+        width: "100%",
         height: "100vh",
         display: "flex",
         justifyContent: "center",
@@ -147,6 +157,17 @@ const styles = {
         cursor: "pointer",
         fontWeight: "bold",
         transition: "0.2s"
+    },
+    registerContainer: {
+        marginTop: "15px",
+        textAlign: "center",
+        fontSize: "14px"
+    },
+
+    registerLink: {
+        color: "#4facfe",
+        cursor: "pointer",
+        fontWeight: "bold"
     }
 };
 
