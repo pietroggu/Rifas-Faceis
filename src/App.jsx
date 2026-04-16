@@ -7,6 +7,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Raffle from "./pages/Raffle";
+import Boss from "./pages/Boss";
+import Dados from "./pages/Dados";
 
 /**
  * Componente principal com rotas da aplicação
@@ -23,8 +25,11 @@ function App() {
         {/* 🔐 Rotas privadas (COM layout) */}
         <Route element={<Layout />}>
           <Route path="/home" element={<Home />} />
+          <Route path="/boss" element={<Boss />} />
+          <Route path="/dados" element={<Dados />} />
           <Route path="/rifa/:id" element={<Raffle />} />
         </Route>
+        
       </Routes>
     </BrowserRouter>
   );

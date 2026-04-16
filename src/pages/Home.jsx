@@ -32,17 +32,18 @@ function Home() {
 
   return (
     <div style={styles.container}>
-      <h1>🎯 Rifas Disponíveis</h1>
+      <h1 style={styles.center}>🎯 Rifas Disponíveis</h1>
 
       <div style={styles.grid}>
         {raffles.map((raffle) => (
-          <RaffleCard
-            key={raffle.id}
-            title={raffle.title}
-            description={raffle.description}
-            price={raffle.price}
-            totalNumbers={raffle.totalNumbers}
-          />
+          <div style={styles.cardWrapper} key={raffle.id}>
+            <RaffleCard
+              title={raffle.title}
+              description={raffle.description}
+              price={raffle.price}
+              totalNumbers={raffle.totalNumbers}
+            />
+          </div>
         ))}
       </div>
     </div>
@@ -54,6 +55,16 @@ const styles = {
     padding: "20px",
     textAlign: "center",
   },
+  center:{
+    textAlign: "center",
+    padding: "10px",
+    margin: "5px"
+  },
+  cardWrapper: {
+  flex: "1 1 280px",
+  maxWidth: "320px",
+  width: "100%",
+},
   grid: {
     display: "flex",
     flexWrap: "wrap",
