@@ -115,7 +115,7 @@ const styles = {
     width: "100%",
     maxWidth: "500px",
     marginInline: "auto",
-    padding: "30px",
+    padding: "2px",
     background: "#f1f5f9",
     borderRadius: "12px",
     minHeight: "350px",
