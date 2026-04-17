@@ -26,7 +26,8 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(3px);
   z-index: 998;
 }
 
@@ -43,13 +44,19 @@
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
-  transition: transform 0.35s ease-in-out;
+  transition: transform 0.35s ease-in-out, opacity 0.3s;
   box-shadow: 2px 0 10px rgba(0,0,0,0.2);
   z-index: 999;
+  opacity: 0;
+
+  box-sizing: border-box;   /* 🔥 ESSENCIAL */
+  overflow-y: auto;         /* 🔥 evita corte */
 }
+
 
 .sidebar.open {
   transform: translateX(0);
+  opacity: 1;
 }
 
 /* LOGO */
@@ -68,7 +75,9 @@
 
 /* LINKS */
 .sidebar-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px;
   border-radius: 8px;
   text-decoration: none;
@@ -79,7 +88,7 @@
 
 .sidebar-link:hover {
   background: rgba(255, 255, 255, 0.2);
-  padding-left: 12px;
+  transform: translateX(3px);
 }
 
 .sidebar-link.active {

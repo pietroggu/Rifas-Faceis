@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import logo from "../../assets/logo_branca.png";
 import "./Sidebar.css";
+import { Home, Ticket, HelpCircle, Lock, User, LogOut } from "lucide-react";
 
 function Sidebar() {
   const [open, setOpen] = useState(false);
@@ -11,7 +12,7 @@ function Sidebar() {
       {/* BOTÃO */}
       {!open && (
         <button onClick={() => setOpen(true)} className="menuBtn">
-          ☰
+          {open ? "✕" : "☰"}
         </button>
       )}
 
@@ -23,29 +24,29 @@ function Sidebar() {
         <img src={logo} alt="Logo" className="logo" />
 
         <nav className="nav">
-          <NavLink to="/home" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
-            Home
+          <NavLink to="/home" onClick={() => setOpen(false)} className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+            <Home size={18} /> Home
           </NavLink>
 
-          <NavLink to="/suasrifas" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
-            Minhas rifas
+          <NavLink to="/suasrifas" onClick={() => setOpen(false)} className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+            <Ticket size={18} /> Minhas rifas
           </NavLink>
 
-          <NavLink to="/ajudas" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
-            Ajuda
+          <NavLink to="/ajudas" onClick={() => setOpen(false)} className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+            <HelpCircle size={18} /> Ajuda
           </NavLink>
 
-          <NavLink to="/boss" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
-            Acesso privado
+          <NavLink to="/boss" onClick={() => setOpen(false)} className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+            <Lock size={18} /> Acesso privado
           </NavLink>
         </nav>
 
-        <NavLink to="/dados" className="sidebar-link bottom">
-          Meus dados
+        <NavLink to="/dados" onClick={() => setOpen(false)} className="sidebar-link bottom">
+          <User size={18} /> Meus dados
         </NavLink>
 
-        <NavLink to="/" className="sidebar-link">
-          Logout
+        <NavLink to="/" onClick={() => setOpen(false)} className="sidebar-link">
+          <LogOut size={18} /> Logout
         </NavLink>
       </aside>
     </>
