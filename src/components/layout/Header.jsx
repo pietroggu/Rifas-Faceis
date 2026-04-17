@@ -16,7 +16,7 @@ function Header() {
 const styles = {
   header: {
     height: "65px",
-    background: "#3B82F6",
+    background: "#2563EB",
     borderBottom: "1px solid #ddd",
     display: "flex",
     alignItems: "center",
@@ -24,11 +24,11 @@ const styles = {
     padding: "0 20px",
     color: "#ffffff",
 
-    position: "sticky", // 🔥 fixa no topo
+    position: "sticky", 
     top: 0,
     zIndex: 10,
 
-    width: "100%", // 🔥 evita bug de largura
+    width: "100%",
     boxSizing: "border-box",
   },
 
