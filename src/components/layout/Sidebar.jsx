@@ -23,8 +23,8 @@ function Sidebar() {
 
         <nav style={styles.nav}>
           <Link style={styles.link} to="/home">🏠 Home</Link>
-          <Link style={styles.link} to="/home">🎟 Minhas rifas</Link>
-          <Link style={styles.link} to="/home">🆘 Ajuda</Link>
+          <Link style={styles.link} to="/suasrifas">🎟 Minhas rifas</Link>
+          <Link style={styles.link} to="/ajudas">🆘 Ajuda</Link>
           <Link style={styles.link} to = "/boss">🔒 Acesso privado</Link>
         </nav>
         

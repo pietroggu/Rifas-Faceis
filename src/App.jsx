@@ -9,7 +9,8 @@ import Home from "./pages/Home";
 import Raffle from "./pages/Raffle";
 import Boss from "./pages/Boss";
 import Dados from "./pages/Dados";
-
+import Ajudas from "./pages/Ajudas";
+import Rifas from "./pages/Minhas_rifas";
 /**
  * Componente principal com rotas da aplicação
  * Separando rotas públicas e privadas
@@ -27,6 +28,8 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/boss" element={<Boss />} />
           <Route path="/dados" element={<Dados />} />
+          <Route path="/ajudas" element={<Ajudas />} />
+          <Route path="/suasrifas" element={<Rifas />} />
           <Route path="/rifa/:id" element={<Raffle />} />
         </Route>
         

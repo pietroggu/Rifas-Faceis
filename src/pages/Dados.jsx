@@ -2,13 +2,15 @@ import React, { useState } from "react";
 
 function Dados() {
   const [user, setUser] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    password: "",
+    name: "João da Silva",
+    email: "joao.silva@email.com",
+    phone: "(16) 98888-7777",
+    address: "Rua das Flores, 123 - São Carlos",
+    password: "123456",
+    photo: "https://ui-avatars.com/api/?name=Joao+Silva",
   });
 
-  const [editing, setEditing] = useState(true);
+  const [editing, setEditing] = useState(false);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -31,6 +33,9 @@ function Dados() {
 
       <div style={styles.form}>
         <h2>Informações pessoais</h2>
+
+        {/* FOTO */}
+        <img src={user.photo} alt="Perfil" style={styles.photo} />
 
         <input
           style={styles.input}
@@ -58,6 +63,16 @@ function Dados() {
           name="phone"
           placeholder="Telefone"
           value={user.phone}
+          onChange={handleChange}
+          disabled={!editing}
+        />
+
+        <input
+          style={styles.input}
+          type="text"
+          name="address"
+          placeholder="Endereço"
+          value={user.address}
           onChange={handleChange}
           disabled={!editing}
         />
@@ -105,6 +120,15 @@ const styles = {
     borderRadius: "12px",
     minHeight: "350px",
     justifyContent: "center",
+    alignItems: "center",
+  },
+
+  photo: {
+    width: "120px",
+    height: "120px",
+    borderRadius: "50%",
+    objectFit: "cover",
+    marginBottom: "10px",
   },
 
   input: {

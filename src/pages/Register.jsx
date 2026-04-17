@@ -6,6 +6,7 @@ import logo from "../assets/logo.png";
 function Register() {
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
+    const [telefone, setTelefone] = useState("");
     const [senha, setSenha] = useState("");
     const [erros, setErros] = useState({});
     const [loading, setLoading] = useState(false);
@@ -79,6 +80,12 @@ function Register() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                />
+                <Input
+                    label="Telefone"
+                    type="text"
+                    value={telefone}
+                    onChange={(e) => setTelefone(e.target.value)}
                 />
 
                 <Input
