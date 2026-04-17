@@ -1,0 +1,16 @@
+.raffle-card {
+  width: 250px;
+  padding: 20px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  border: 2px solid transparent;
+}
+
+.raffle-card:hover {
+  border: 2px solid #2563EB;
+  transform: scale(1.03);
+}

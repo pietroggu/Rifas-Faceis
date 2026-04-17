@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import "./RaffleCard.css";
 
 /**
  * Componente que representa uma rifa individual
@@ -22,7 +23,7 @@ function RaffleCard({ id, title, description, price, totalNumbers }) {
     }
 
     return (
-        <div onClick={handleClick} style={styles.card}>
+        <div onClick={handleClick} className="raffle-card">
             <h2>{title}</h2>
             <p>{description}</p>
             <p>💰 R$ {price}</p>
@@ -41,6 +42,7 @@ const styles = {
         cursor: "pointer",
         transition: "0.2s"
     }
+    
 };
 
 export default RaffleCard;

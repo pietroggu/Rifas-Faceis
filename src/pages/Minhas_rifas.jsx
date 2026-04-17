@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Rifas() {
+  const navigate = useNavigate();
+
   const [myRaffles] = useState([
     {
-    
       id: 1,
       title: "Rifa do iPhone 15",
       subtitle: "Aguardando sorteio - será realizado dia 23/04",
@@ -20,7 +22,7 @@ function Rifas() {
     {
       id: 3,
       title: "Rifa da Moto",
-      subtitle: "Sorteio realizado, você não foi contemplado com o prêmio",
+      subtitle: "Sorteio realizado, você não foi contemplado",
       number: 5,
       price: 50,
     },
@@ -28,7 +30,7 @@ function Rifas() {
 
   return (
     <div style={styles.container}>
-      <h1>Minhas Rifas</h1>
+      <h1 style={styles.title}>Minhas Rifas</h1>
 
       {myRaffles.length === 0 ? (
         <p>Você ainda não comprou nenhuma rifa.</p>
@@ -44,8 +46,27 @@ function Rifas() {
               </p>
 
               <p>
-                💰 Valor: R$ {raffle.price}
+                💰 Valor: <strong>R$ {raffle.price}</strong>
               </p>
+
+              <button
+                style={styles.button}
+                onMouseOver={(e) =>
+                  (e.target.style.background = "#1d4ed8")
+                }
+                onMouseOut={(e) =>
+                  (e.target.style.background = "#2563EB")
+                }
+                onMouseDown={(e) =>
+                  (e.target.style.transform = "scale(0.97)")
+                }
+                onMouseUp={(e) =>
+                  (e.target.style.transform = "scale(1)")
+                }
+                onClick={() => navigate(`/rifa/undefined`)}
+              >
+                Ver detalhes
+              </button>
             </div>
           ))}
         </div>
@@ -58,28 +79,47 @@ const styles = {
   container: {
     padding: "20px",
     textAlign: "center",
-    border: "5px",
   },
-  subtitle:{
-      fontSize: "14px",
-      color: "#555",
-      marginBottom: "5px",
+
+  title: {
+    marginBottom: "50px",
   },
+
+  subtitle: {
+    fontSize: "14px",
+    color: "#555",
+    marginBottom: "10px",
+  },
+
   list: {
     marginTop: "20px",
     display: "flex",
     flexDirection: "column",
-    gap: "15px",
+    gap: "20px",
     maxWidth: "500px",
     marginInline: "auto",
   },
 
   card: {
     padding: "20px",
-    border: "solid black 5px",
-    background: "#f1f5f9",
+    border: "1px solid #ddd",
+    background: "#f8fafc",
     borderRadius: "12px",
     textAlign: "left",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+    transition: "0.2s",
+  },
+
+  button: {
+    marginTop: "15px",
+    padding: "10px 16px",
+    background: "#2563EB",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    transition: "all 0.2s ease",
   },
 };
 
