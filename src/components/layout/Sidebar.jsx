@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import logo from "../../assets/logo_branca.png";
 import "./Sidebar.css";
 
@@ -8,90 +8,48 @@ function Sidebar() {
 
   return (
     <>
-      {/* BOTÃO MOBILE */}
-      <button onClick={() => setOpen(!open)} style={styles.menuBtn} className="menuBtn">
-        ☰
-      </button>
+      {/* BOTÃO */}
+      {!open && (
+        <button onClick={() => setOpen(true)} className="menuBtn">
+          ☰
+        </button>
+      )}
+
+      {/* OVERLAY */}
+      {open && <div className="overlay" onClick={() => setOpen(false)} />}
 
       {/* SIDEBAR */}
-      <aside
-        style={{
-          ...styles.sidebar,
-          transform: open ? "translateX(0)" : "translateX(-100%)",
-        }}
-      >
-        <img src={logo} alt="Logo" style={styles.logo} />
+      <aside className={`sidebar ${open ? "open" : ""}`}>
+        <img src={logo} alt="Logo" className="logo" />
 
-        <nav style={styles.nav}>
-          <Link className="sidebar-link" style={styles.link} to="/home">Home</Link>
-          <Link className="sidebar-link" style={styles.link} to="/suasrifas">Minhas rifas</Link>
-          <Link className="sidebar-link" style={styles.link} to="/ajudas">Ajuda</Link>
-          <Link className="sidebar-link" style={styles.link} to = "/boss">Acesso privado</Link>
+        <nav className="nav">
+          <NavLink to="/home" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+            Home
+          </NavLink>
+
+          <NavLink to="/suasrifas" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+            Minhas rifas
+          </NavLink>
+
+          <NavLink to="/ajudas" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+            Ajuda
+          </NavLink>
+
+          <NavLink to="/boss" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+            Acesso privado
+          </NavLink>
         </nav>
-        
-        <Link className="sidebar-link" style={styles.link1} to="/dados">Meus dados</Link>
-        <Link className="sidebar-link" style={styles.link} to="">Logout</Link>
+
+        <NavLink to="/dados" className="sidebar-link bottom">
+          Meus dados
+        </NavLink>
+
+        <NavLink to="/" className="sidebar-link">
+          Logout
+        </NavLink>
       </aside>
     </>
   );
 }
-
-const styles = {
-  menuBtn: {
-    position: "fixed",
-    top: "10px",
-    left: "10px",
-    zIndex: 1000,
-    fontSize: "24px",
-    background: "#2563EB",
-    color: "#fff",
-    border: "none",
-    padding: "10px",
-    borderRadius: "6px",
-    cursor: "pointer"
-  },
-
-  sidebar: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    height: "100vh",
-    width: "240px",
-    background: "#2563EB",
-    color: "#fff",
-    padding: "20px",
-    display: "flex",
-    flexDirection: "column",
-    transition: "transform 0.35s ease-in-out",
-    boxShadow: "2px 0 10px rgba(0,0,0,0.2)",
-    zIndex: 999
-  },
-
-  nav: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "5px",
-  },
-
-  link: {
-    color: "#fff",
-    textDecoration: "none",
-    fontSize: "19px",
-  },
-
-  link1: {
-    color: "#fff",
-    marginBottom: "3px",
-    textDecoration: "none",
-    fontSize: "19px",
-    marginTop: "50px"
-  },
-
-  logo: {
-    width: "100%",
-    maxWidth: "180px",
-    margin: "0 auto 25px",
-  },
-};
 
 export default Sidebar;

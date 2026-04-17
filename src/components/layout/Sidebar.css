@@ -1,15 +1,93 @@
-.menuBtn:hover {
-  background: #3B82F6;
-  transform: scale(1.05);
+/* BOTÃO */
+.menuBtn {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  font-size: 24px;
+  color: #fff;
+  background: #2563EB;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
   transition: 0.2s;
 }
 
+.menuBtn:hover {
+  background: #1d4ed8;
+  transform: scale(1.05);
+}
+
+/* OVERLAY */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.3);
+  z-index: 998;
+}
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 240px;
+  background: #2563EB;
+  color: #fff;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.35s ease-in-out;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  z-index: 999;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+/* LOGO */
+.logo {
+  width: 100%;
+  max-width: 180px;
+  margin: 0 auto 25px;
+}
+
+/* NAV */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* LINKS */
 .sidebar-link {
-  transition: 0.2s;
+  display: block;
+  padding: 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #fff;
+  font-size: 16px;
+  transition: all 0.2s ease;
 }
 
 .sidebar-link:hover {
-  background: rgba(255, 255, 255, 0.15);
-  padding-left: 5px;
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  padding-left: 12px;
+}
+
+.sidebar-link.active {
+  background: rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+}
+
+/* LINK DE BAIXO */
+.bottom {
+  margin-top: auto;
 }
