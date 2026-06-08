@@ -19,7 +19,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 🔓 Rotas públicas (SEM layout) */}
+        {/*Rotas públicas (SEM layout) */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
 

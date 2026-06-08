@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RaffleCard from "../components/RaffleCard";
 
 function Boss() {
@@ -11,31 +11,67 @@ function Boss() {
     price: "",
     totalNumbers: "",
   });
+  useEffect(() => {
+    carregarRifas();
+  }, []);
+
+  async function carregarRifas() {
+    try {
+      const response = await fetch("http://localhost:3000/rifas");
+      const data = await response.json();
+
+      setRaffles(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   function handleChange(e) {
     const { name, value } = e.target;
     setNewRaffle({ ...newRaffle, [name]: value });
   }
 
-  function handleCreate() {
-    if (!newRaffle.title || !newRaffle.price || !newRaffle.totalNumbers) {
-      alert("Preencha todos os campos!");
-      return;
-    }
-
-    const raffle = {
-      id: Date.now(),
-      title: newRaffle.title,
-      description: "Rifa criada por você",
-      price: newRaffle.price,
-      totalNumbers: newRaffle.totalNumbers,
-    };
-
-    setRaffles([...raffles, raffle]);
-
-    setNewRaffle({ title: "", price: "", totalNumbers: "" });
-    setShowForm(false);
+async function handleCreate() {
+  if (!newRaffle.title || !newRaffle.price || !newRaffle.totalNumbers) {
+    alert("Preencha todos os campos!");
+    return;
   }
+
+  try {
+    const response = await fetch("http://localhost:3000/rifas", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nome: newRaffle.title,
+        descricao: "Rifa criada pelo usuário",
+        premio: newRaffle.title,
+        imagem: "",
+        valor_numero: Number(newRaffle.price),
+        quantidade_numeros: Number(newRaffle.totalNumbers),
+        data_sorteio: "2026-12-31",
+      }),
+    });
+
+    const data = await response.json();
+
+    alert(`Rifa criada! ID: ${data.id}`);
+    await carregarRifas();
+
+    setNewRaffle({
+      title: "",
+      price: "",
+      totalNumbers: "",
+    });
+
+    setShowForm(false);
+
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao criar rifa");
+  }
+}
 
   return (
     <div style={styles.container}>

@@ -14,7 +14,7 @@ import "./RaffleCard.css";
 /**
  * Card de rifa clicável
  */
-function RaffleCard({ id, title, description, price, totalNumbers }) {
+function RaffleCard({ id, nome, descricao, valor_numero, quantidade_numeros }) {
     const navigate = useNavigate();
 
     function handleClick() {
@@ -24,10 +24,10 @@ function RaffleCard({ id, title, description, price, totalNumbers }) {
 
     return (
         <div onClick={handleClick} className="raffle-card">
-            <h2>{title}</h2>
-            <p>{description}</p>
-            <p>💰 R$ {price}</p>
-            <p>🎟 {totalNumbers} números</p>
+            <h2>{nome}</h2>
+            <p>{descricao}</p>
+            <p>💰 R$ {valor_numero}</p>
+            <p>🎟 {quantidade_numeros} números</p>
         </div>
     );
 }

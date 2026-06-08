@@ -62,7 +62,7 @@ function Login() {
         <div style={styles.container}>
             <form onSubmit={handleLogin} style={styles.card}>
                 
-                {/* 🔥 LOGO + BRAND */}
+                {}
                 <div style={styles.header}>
                     <img src={logo} alt="Logo" style={styles.logo} />
                     <h3 className="header"> Login</h3>

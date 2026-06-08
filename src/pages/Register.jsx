@@ -55,7 +55,7 @@ function Register() {
         <div style={styles.container}>
             <form onSubmit={handleRegister} style={styles.card}>
                 
-                {/* 🔥 LOGO + BRAND */}
+                {}
                 <div style={styles.header}>
                     <img src={logo} alt="Logo" style={styles.logo} />
                     <p style={styles.subtitle}>Crie sua conta para participar das rifas</p>
