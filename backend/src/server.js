@@ -37,7 +37,7 @@ app.post("/rifas", (req, res) => {
             quantidade_numeros,
             data_sorteio
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     db.run(
