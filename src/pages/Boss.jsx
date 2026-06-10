@@ -10,6 +10,10 @@ function Boss() {
     title: "",
     price: "",
     totalNumbers: "",
+    description: "",
+    institution: "",
+    data: "",
+    description: "",
   });
   useEffect(() => {
     carregarRifas();
@@ -32,7 +36,9 @@ function Boss() {
   }
 
 async function handleCreate() {
-  if (!newRaffle.title || !newRaffle.price || !newRaffle.totalNumbers) {
+  if (!newRaffle.title || !newRaffle.price || !newRaffle.totalNumbers 
+    ||!newRaffle.data || !newRaffle.description || !newRaffle.institution
+    ||!newRaffle.category  ) {
     alert("Preencha todos os campos!");
     return;
   }
@@ -45,14 +51,14 @@ async function handleCreate() {
       },
       body: JSON.stringify({
         nome: newRaffle.title,
-        descricao: "Rifa criada por " + newRaffle.institution,
+        descricao: newRaffle.description,
         categoria: newRaffle.category,
         instituicao: newRaffle.institution,
         premio: newRaffle.title,
         imagem: "",
         valor_numero: Number(newRaffle.price),
         quantidade_numeros: Number(newRaffle.totalNumbers),
-        data_sorteio: "2026-12-31",
+        data_sorteio: newRaffle.data,
       }),
     });
 
@@ -63,10 +69,12 @@ async function handleCreate() {
 
     setNewRaffle({
       title: "",
+      description: "",
       price: "",
       totalNumbers: "",
       category: "",
       institution: "",
+      data: "",
     });
 
     setShowForm(false);
@@ -97,6 +105,16 @@ async function handleCreate() {
             value={newRaffle.title}
             onChange={handleChange}
           />
+          
+          <input
+            style={styles.input}
+            type="text"
+            name="description"
+            placeholder="Descrição"
+            value={newRaffle.description}
+            onChange={handleChange}
+          />
+
           <input
             style={styles.input}
             type="text"
@@ -128,6 +146,14 @@ async function handleCreate() {
             name="totalNumbers"
             placeholder="Quantidade de números"
             value={newRaffle.totalNumbers}
+            onChange={handleChange}
+          />
+          <input
+            style={styles.input}
+            type="text"
+            name="data"
+            placeholder="Data do sorteio"
+            value={newRaffle.data}
             onChange={handleChange}
           />
 
