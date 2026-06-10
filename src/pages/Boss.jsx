@@ -45,7 +45,9 @@ async function handleCreate() {
       },
       body: JSON.stringify({
         nome: newRaffle.title,
-        descricao: "Rifa criada pelo usuário",
+        descricao: "Rifa criada por " + newRaffle.institution,
+        categoria: newRaffle.category,
+        instituicao: newRaffle.institution,
         premio: newRaffle.title,
         imagem: "",
         valor_numero: Number(newRaffle.price),
@@ -63,6 +65,8 @@ async function handleCreate() {
       title: "",
       price: "",
       totalNumbers: "",
+      category: "",
+      institution: "",
     });
 
     setShowForm(false);
@@ -93,6 +97,14 @@ async function handleCreate() {
             value={newRaffle.title}
             onChange={handleChange}
           />
+          <input
+            style={styles.input}
+            type="text"
+            name="institution"
+            placeholder="Instituição responsável pelas rifas"
+            value={newRaffle.institution}
+            onChange={handleChange}
+          />
 
           <input
             style={styles.input}
@@ -102,7 +114,14 @@ async function handleCreate() {
             value={newRaffle.price}
             onChange={handleChange}
           />
-
+          <input
+            style={styles.input}
+            type="text"
+            name="category"
+            placeholder="Categoria"
+            value={newRaffle.category}
+            onChange={handleChange}
+          />
           <input
             style={styles.input}
             type="number"

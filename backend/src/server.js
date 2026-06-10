@@ -18,6 +18,8 @@ app.post("/rifas", (req, res) => {
         descricao,
         premio,
         imagem,
+        categoria,
+        instituicao,
         valor_numero,
         quantidade_numeros,
         data_sorteio
@@ -29,6 +31,8 @@ app.post("/rifas", (req, res) => {
             descricao,
             premio,
             imagem,
+            categoria,
+            instituicao,
             valor_numero,
             quantidade_numeros,
             data_sorteio
@@ -43,6 +47,8 @@ app.post("/rifas", (req, res) => {
             descricao,
             premio,
             imagem,
+            categoria,
+            instituicao,
             valor_numero,
             quantidade_numeros,
             data_sorteio
@@ -54,7 +60,6 @@ app.post("/rifas", (req, res) => {
 
             const rifaId = this.lastID;
 
-            // Gera os números da rifa na tabela numeros
             const insertNumero = db.prepare(
                 "INSERT INTO numeros (rifa_id, numero) VALUES (?, ?)"
             );
@@ -124,6 +129,66 @@ app.get("/rifas/:id/numeros", (req, res) => {
             res.json(rows);
         }
     );
+});
+
+/**
+ * POST /rifas/:id/numeros/:numero/comprar
+ * Registra a compra de um número da rifa.
+ * Cria o usuário caso ainda não exista (baseado no telefone).
+ * Retorna 409 se o número já estiver vendido.
+ */
+app.post("/rifas/:id/numeros/:numero/comprar", (req, res) => {
+    const { id, numero } = req.params;
+    const { nome, telefone } = req.body;
+
+    if (!nome || !telefone) {
+        return res.status(400).json({ erro: "Nome e telefone são obrigatórios." });
+    }
+
+    // Busca usuário existente pelo telefone
+    db.get("SELECT id FROM usuarios WHERE telefone = ?", [telefone], (err, usuario) => {
+        if (err) {
+            return res.status(500).json({ erro: err.message });
+        }
+
+        function marcarVendido(usuarioId) {
+            db.run(
+                `UPDATE numeros
+                 SET vendido = 1, usuario_id = ?, data_compra = CURRENT_TIMESTAMP
+                 WHERE rifa_id = ? AND numero = ? AND vendido = 0`,
+                [usuarioId, id, numero],
+                function(err2) {
+                    if (err2) {
+                        return res.status(500).json({ erro: err2.message });
+                    }
+
+                    if (this.changes === 0) {
+                        return res.status(409).json({ erro: "Número já vendido ou não encontrado." });
+                    }
+
+                    res.json({ mensagem: "Compra realizada com sucesso!" });
+                }
+            );
+        }
+
+        if (usuario) {
+            // Usuário já existe, só marca o número
+            marcarVendido(usuario.id);
+        } else {
+            // Cria novo usuário e depois marca o número
+            db.run(
+                "INSERT INTO usuarios (nome, telefone) VALUES (?, ?)",
+                [nome, telefone],
+                function(err2) {
+                    if (err2) {
+                        return res.status(500).json({ erro: err2.message });
+                    }
+
+                    marcarVendido(this.lastID);
+                }
+            );
+        }
+    });
 });
 
 app.listen(3000, () => {

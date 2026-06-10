@@ -17,6 +17,8 @@ db.serialize(() => {
             descricao TEXT,
             premio TEXT NOT NULL,
             imagem TEXT,
+            categoria TEXT,
+            instituicao TEXT,
             valor_numero REAL NOT NULL,
             quantidade_numeros INTEGER NOT NULL,
             data_sorteio TEXT NOT NULL,

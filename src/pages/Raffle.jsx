@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import raffleService from "../services/raffleService";
 import NumberCard from "../components/NumberCard";
 import PurchaseModal from "../components/PurchaseModal";
 
@@ -17,17 +16,14 @@ function Raffle() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const raffleData =
-                    await raffleService.getRaffleById(id);
-
+                // Busca os dados reais da rifa no backend
+                const raffleRes = await fetch(`http://localhost:3000/rifas/${id}`);
+                const raffleData = await raffleRes.json();
                 setRaffle(raffleData);
 
-                const response = await fetch(
-                    `http://localhost:3000/rifas/${id}/numeros`
-                );
-
-                const numerosData = await response.json();
-
+                // Busca os números da rifa
+                const numerosRes = await fetch(`http://localhost:3000/rifas/${id}/numeros`);
+                const numerosData = await numerosRes.json();
                 setNumeros(numerosData);
 
             } catch (error) {
@@ -46,12 +42,37 @@ function Raffle() {
         setModalOpen(true);
     }
 
-    function handleConfirmPurchase(data) {
-        alert(
-            `Compra realizada!\nNúmero: ${data.number}\nNome: ${data.name}`
-        );
+    async function handleConfirmPurchase(data) {
+        try {
+            const response = await fetch(
+                `http://localhost:3000/rifas/${id}/numeros/${data.number}/comprar`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nome: data.name, telefone: data.phone })
+                }
+            );
 
-        setModalOpen(false);
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.erro);
+                return;
+            }
+
+            alert(`Compra realizada!\nNúmero: ${data.number}\nNome: ${data.name}`);
+            setModalOpen(false);
+
+            // Atualiza o número na lista local para aparecer como vendido imediatamente
+            setNumeros(prev =>
+                prev.map(n =>
+                    n.numero === data.number ? { ...n, vendido: 1 } : n
+                )
+            );
+
+        } catch (err) {
+            alert("Erro ao registrar compra. Tente novamente.");
+        }
     }
 
     if (loading) return <p>Carregando...</p>;
@@ -63,10 +84,10 @@ function Raffle() {
             <h1>{raffle.nome}</h1>
 
             <p>{raffle.descricao}</p>
-
-            <p>
-                Valor por número: R$ {raffle.valor_numero}
-            </p>
+            
+            <p>Instituição responsável: {raffle.instituicao}</p>
+            <p>Categoria: {raffle.categoria}</p>
+            <p>Valor por número: R$ {raffle.valor_numero}</p>
 
             <div style={styles.grid}>
                 {numeros.map((num) => (
