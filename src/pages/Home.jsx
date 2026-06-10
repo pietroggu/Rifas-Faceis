@@ -1,51 +1,62 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import RaffleCard from "../components/RaffleCard";
 
 /**
- * Página principal que lista as rifas
+ * Página principal que lista as rifas buscadas do backend
  */
 function Home() {
-  // Simulação de dados (futuramente virá do backend)
-  const raffles = [
-    {
-      id: 1,
-      title: "iPhone 15",
-      description: "Concorra a um iPhone 15 novinho!",
-      price: 10,
-      totalNumbers: 100,
-    },
-    {
-      id: 2,
-      title: "PlayStation 5",
-      description: "Ganhe um PS5 edição digital",
-      price: 15,
-      totalNumbers: 150,
-    },
-    {
-      id: 3,
-      title: "Notebook Gamer",
-      description: "Notebook RTX para jogos pesados",
-      price: 20,
-      totalNumbers: 200,
-    },
-  ];
+  const [rifas, setRifas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    async function fetchRifas() {
+      try {
+        const response = await fetch("http://localhost:3000/rifas");
+        if (!response.ok) {
+          throw new Error("Erro ao buscar rifas");
+        }
+        const data = await response.json();
+        setRifas(data);
+      } catch (err) {
+        setErro(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchRifas();
+  }, []);
+
+  if (loading) {
+    return <p style={styles.center}>Carregando rifas...</p>;
+  }
+
+  if (erro) {
+    return <p style={styles.erro}>Erro: {erro}</p>;
+  }
 
   return (
     <div style={styles.container}>
       <h1 style={styles.center}>🎯 Rifas Disponíveis</h1>
 
-      <div style={styles.grid}>
-        {raffles.map((raffle) => (
-          <div style={styles.cardWrapper} key={raffle.id}>
-            <RaffleCard
-              title={raffle.title}
-              description={raffle.description}
-              price={raffle.price}
-              totalNumbers={raffle.totalNumbers}
-            />
-          </div>
-        ))}
-      </div>
+      {rifas.length === 0 ? (
+        <p style={styles.center}>Nenhuma rifa disponível no momento.</p>
+      ) : (
+        <div style={styles.grid}>
+          {rifas.map((rifa) => (
+            <div style={styles.cardWrapper} key={rifa.id}>
+              <RaffleCard
+                id={rifa.id}
+                nome={rifa.nome}
+                descricao={rifa.descricao}
+                valor_numero={rifa.valor_numero}
+                quantidade_numeros={rifa.quantidade_numeros}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -55,16 +66,21 @@ const styles = {
     padding: "20px",
     textAlign: "center",
   },
-  center:{
+  center: {
     textAlign: "center",
     padding: "10px",
-    margin: "5px"
+    margin: "5px",
+  },
+  erro: {
+    textAlign: "center",
+    color: "red",
+    marginTop: "20px",
   },
   cardWrapper: {
-  flex: "1 1 280px",
-  maxWidth: "320px",
-  width: "100%",
-},
+    flex: "1 1 280px",
+    maxWidth: "320px",
+    width: "100%",
+  },
   grid: {
     display: "flex",
     flexWrap: "wrap",
