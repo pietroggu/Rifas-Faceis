@@ -1,12 +1,13 @@
- import httpClient from "./httpClient";
+import httpClient from "./httpClient";
 
 /**
- * Raffle API module
- * Handles all requests related to raffles and ticket slots
+ * API layer for raffle and ticket slot operations.
+ * Handles raw HTTP communication only.
  */
 export const raffleApi = {
   /**
-   * Get all raffles
+   * Fetch all raffles from the server.
+   * @returns {Promise<Array>} Raw raffle array
    */
   getAllRaffles: async () => {
     try {
@@ -18,7 +19,9 @@ export const raffleApi = {
   },
 
   /**
-   * Get raffle by ID
+   * Fetch a single raffle by ID.
+   * @param {string|number} raffleId
+   * @returns {Promise<Object>} Raw raffle data
    */
   getById: async (raffleId) => {
     try {
@@ -30,31 +33,25 @@ export const raffleApi = {
   },
 
   /**
-   * Get all available numbers for a specific raffle
-   */
-  getNumbers: async (raffleId) => {
-    try {
-      const response = await httpClient.get(`/raffles/${raffleId}/numeros`);
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || "Failed to fetch raffle numbers");
-    }
-  },
-
-  /**
-   * Purchase a specific raffle number
+   * Purchase a specific ticket number.
+   * @param {string|number} raffleId
+   * @param {number} number
+   * @param {Object} buyerData - { name, phone }
+   * @returns {Promise<Object>} Purchase confirmation payload
    */
   buyNumber: async (raffleId, number, buyerData) => {
     try {
       const response = await httpClient.post(`/raffles/${raffleId}/numeros/${number}/comprar`, buyerData);
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || "Failed to register purchase");
+      throw new Error(error.response?.data?.message || "Transaction failed");
     }
   },
 
   /**
-   * Create a new raffle
+   * Create a new raffle entry.
+   * @param {Object} raffleData
+   * @returns {Promise<Object>} Created raffle instance
    */
   create: async (raffleData) => {
     try {
@@ -66,7 +63,9 @@ export const raffleApi = {
   },
 
   /**
-   * Delete a raffle
+   * Permanently delete a raffle.
+   * @param {string|number} raffleId
+   * @returns {Promise<Object>} Deletion metrics response
    */
   delete: async (raffleId) => {
     try {

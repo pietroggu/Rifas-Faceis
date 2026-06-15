@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import AuthService from "../services/authService";
-import { authApi } from "../api/auth.api";
 
 // Create context container for application shell allocation
 const AuthContext = createContext(undefined);
@@ -19,21 +18,20 @@ export function AuthProvider({ children }) {
      * Automatic session handshake to sync memory with server on application mount.
      */
     async function initializeAuth() {
-      const token = localStorage.getItem("token");
+      const hasToken = AuthService.isAuthenticated();
       const localUser = AuthService.getCurrentUser();
 
-      if (token && localUser) {
-        // Hydrate UI state fast with cached data for premium visual UX
+      if (hasToken && localUser) {
+        // Hydrate UI state immediately with cached data for fast layout rendering
         setUser(localUser);
         setIsAuthenticated(true);
 
         try {
-          // Silent background request to sync state with fresh database data
-          const freshProfile = await authApi.getProfile();
+          // Synchronize profile data through the service layer to protect boundaries
+          const freshProfile = await AuthService.syncProfile();
           setUser(freshProfile);
-          localStorage.setItem("user", JSON.stringify(freshProfile));
         } catch (error) {
-          console.error("Session token verification failed, forcing logout:", error);
+          console.error("Session sync failed, forcing local session purge:", error);
           AuthService.logout();
           setUser(null);
           setIsAuthenticated(false);
@@ -46,7 +44,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   /**
-   * Trigger login workflow changes down the component tree.
+   * Action trigger to process user credentials and transition interface states.
+   * @param {string} email
+   * @param {string} password
    */
   const loginUser = async (email, password) => {
     setLoading(true);
@@ -61,7 +61,7 @@ export function AuthProvider({ children }) {
   };
 
   /**
-   * Trigger clean logout session destruction actions.
+   * Universal command to wipe session data and redirect rendering trees.
    */
   const logoutUser = () => {
     AuthService.logout();
@@ -77,8 +77,8 @@ export function AuthProvider({ children }) {
 }
 
 /**
- * Custom hook utility to interact with the managed global authentication state.
- * @returns {Object} { user, isAuthenticated, loading, loginUser, logoutUser }
+ * Custom hook utility to interact safely with the global context instance.
+ * @returns {Object} Context reactive parameters and actions
  */
 export function useAuth() {
   const context = useContext(AuthContext);

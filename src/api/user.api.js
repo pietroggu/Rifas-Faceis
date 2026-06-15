@@ -1,25 +1,21 @@
 import httpClient from "./httpClient";
 
 /**
- * User Resource API Module
- * Manages database records, user registrations, and account administration.
+ * API layer for user account management.
+ * Handles raw HTTP communication only.
  */
 export const userApi = {
   /**
-   * Provision and persist a new user account into the database.
+   * Register a new user account.
    * @param {Object} userData - { name, phone, email, password }
+   * @returns {Promise<Object>} Created user record
    */
   register: async (userData) => {
     try {
       const response = await httpClient.post("/users/register", userData);
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.error || "Failed to register user account");
+      throw new Error(error.response?.data?.error || "Registration failed");
     }
   },
-
-  /* Future CRUD extensions belong here:
-    updateProfile: async (id, payload) => ...
-    deleteAccount: async (id) => ...
-  */
 };

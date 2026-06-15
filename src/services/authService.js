@@ -1,29 +1,25 @@
 import { authApi } from "../api/auth.api";
 
 /**
- * Authentication Service Layer.
- * Orchestrates local persistence storage rules and handles clean data formatting workflows.
+ * Service Layer managing authentication state, persistence, and profile sync.
  */
 class AuthService {
   /**
-   * Process operational user login state and orchestrate storage triggers.
-   * @param {string} email 
-   * @param {string} password 
-   * @returns {Promise<Object>} Authenticated user object and token payload
+   * Authenticate user credentials and persist session tokens locally.
+   * @param {string} email
+   * @param {string} password
+   * @returns {Promise<Object>} Session payload containing token and user metadata
    */
   static async login(email, password) {
-    // Standardized to call authApi directly instead of userApi to prevent architectural layout pollution
     const data = await authApi.login({ email, password });
-    
     if (data?.token) {
       this.saveAuth(data);
     }
-    
     return data;
   }
 
   /**
-   * Write session variables securely to localStorage.
+   * Persist session state securely into localStorage mirrors.
    * @param {Object} authData - Contains { token, user }
    */
   static saveAuth(authData) {
@@ -32,7 +28,7 @@ class AuthService {
   }
 
   /**
-   * Purge all local persistence session variables to trigger reactive logout.
+   * Clear cached session tokens and structures to trigger log out.
    */
   static logout() {
     localStorage.removeItem("token");
@@ -40,20 +36,30 @@ class AuthService {
   }
 
   /**
-   * Evaluate if a session token key is currently registered locally.
-   * @returns {boolean} Authenticated baseline validation state
+   * Validate if an active session token exists in local storage.
+   * @returns {boolean}
    */
   static isAuthenticated() {
     return !!localStorage.getItem("token");
   }
 
   /**
-   * Safely look up and parse local user profile snapshots.
-   * @returns {Object|null} Cached user metadata object
+   * Retrieve and parse cached local user profile metadata snapshots.
+   * @returns {Object|null}
    */
   static getCurrentUser() {
     const user = localStorage.getItem("user");
     return user ? JSON.parse(user) : null;
+  }
+
+  /**
+   * Fetch a fresh profile state from the server and synchronize local storage.
+   * @returns {Promise<Object>} Updated user profile entity
+   */
+  static async syncProfile() {
+    const freshProfile = await authApi.getProfile();
+    localStorage.setItem("user", JSON.stringify(freshProfile));
+    return freshProfile;
   }
 }
 

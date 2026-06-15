@@ -1,34 +1,34 @@
 import httpClient from "./httpClient";
 
 /**
- * Authentication API Data Layer.
- * Direct communication bridge with backend endpoints. No business logic permitted here.
+ * API layer for authentication endpoints.
+ * Handles raw HTTP communication only.
  */
 export const authApi = {
   /**
-   * Post user credentials to retrieve a JWT and session data.
-   * @param {Object} credentials - Contains { email, password }
-   * @returns {Promise<Object>} Backend JSON object response
+   * Post credentials to exchange for a session token.
+   * @param {Object} credentials - { email, password }
+   * @returns {Promise<Object>} Response data containing token and user
    */
   login: async (credentials) => {
     try {
       const response = await httpClient.post("/auth/login", credentials);
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.error || "Invalid authentication credentials");
+      throw new Error(error.response?.data?.error || "Authentication failed");
     }
   },
 
   /**
-   * Fetch full metadata for the currently authenticated session profile.
-   * @returns {Promise<Object>} Logged-in user profile entity
+   * Fetch current session profile metadata.
+   * @returns {Promise<Object>} Logged-in user profile
    */
   getProfile: async () => {
     try {
       const response = await httpClient.get("/auth/me");
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.error || "Failed to retrieve session profile");
+      throw new Error(error.response?.data?.error || "Failed to fetch profile");
     }
   },
 };

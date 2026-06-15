@@ -1,43 +1,17 @@
 import httpClient from "./httpClient";
 
 /**
- * Ticket API module
- * Handles operations related to raffle tickets
+ * API layer for purchased tickets operations.
+ * Handles raw HTTP communication only.
  */
 export const ticketApi = {
   /**
-   * Get tickets by raffle ID
+   * Fetch all purchased tickets for the currently logged-in account user.
+   * @returns {Promise<Array>} Raw collection of user ticket objects
    */
-  getByRaffle: async (raffleId) => {
+  getUserTickets: async () => {
     try {
-      const response = await httpClient.get(`/raffles/${raffleId}/tickets`);
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || "Failed to fetch tickets");
-    }
-  },
-
-  /**
-   * Purchase a ticket
-   */
-  purchase: async (raffleId, ticketData) => {
-    try {
-      const response = await httpClient.post(
-        `/raffles/${raffleId}/tickets`,
-        ticketData
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || "Failed to purchase ticket");
-    }
-  },
-
-  /**
-   * Get user tickets
-   */
-  getMyTickets: async () => {
-    try {
-      const response = await httpClient.get("/users/me/tickets");
+      const response = await httpClient.get("/tickets/my-purchases");
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to fetch user tickets");

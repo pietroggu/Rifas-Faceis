@@ -1,4 +1,8 @@
-/* BOTÃO */
+/* ==========================================================================
+   Sidebar Layout Component Styles
+   ========================================================================== */
+
+/* Mobile Menu Toggle Button Trigger */
 .menuBtn {
   position: fixed;
   top: 10px;
@@ -11,7 +15,7 @@
   padding: 10px;
   border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .menuBtn:hover {
@@ -19,19 +23,19 @@
   transform: scale(1.05);
 }
 
-/* OVERLAY */
+/* Background Dimmer Dismissal Overlay */
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(3px);
   z-index: 998;
 }
 
-/* SIDEBAR */
+/* Structural Sidebar Drawer Container */
 .sidebar {
   position: fixed;
   top: 0;
@@ -44,36 +48,35 @@
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
-  transition: transform 0.35s ease-in-out, opacity 0.3s;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  transition: transform 0.35s ease-in-out, opacity 0.3s ease;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
   z-index: 999;
   opacity: 0;
-
-  box-sizing: border-box;   /* 🔥 ESSENCIAL */
-  overflow-y: auto;         /* 🔥 evita corte */
+  box-sizing: border-box; /* Crucial to include padding inside total width limits */
+  overflow-y: auto;       /* Prevents content layout clipping on short displays */
 }
 
-
+/* Opened State Modifier for Sidebar Drawer */
 .sidebar.open {
   transform: translateX(0);
   opacity: 1;
 }
 
-/* LOGO */
+/* Application Branding Asset */
 .logo {
   width: 100%;
   max-width: 180px;
   margin: 0 auto 25px;
 }
 
-/* NAV */
+/* Primary Navigation Layout Wrapper */
 .nav {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* LINKS */
+/* Shared Interactive Anchor and Action Link Base Layout */
 .sidebar-link {
   display: flex;
   align-items: center;
@@ -83,7 +86,7 @@
   text-decoration: none;
   color: #fff;
   font-size: 16px;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease, font-weight 0.2s ease;
 }
 
 .sidebar-link:hover {
@@ -96,7 +99,23 @@
   font-weight: 600;
 }
 
-/* LINK DE BAIXO */
+/* Native Button Structural Reset for Actions Layout (e.g. Logout Button) */
+button.sidebar-link {
+  background: none;
+  border: none;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Utility Position Modifiers */
 .bottom {
   margin-top: auto;
-}
+}refactor(arch): overhaul service layer, decouple auth context, and fix logout
+
+- Refactored `RaffleService` and introduced `TicketService` to handle data enrichment and input validation.
+- Decoupled `AuthContext` from direct API infrastructure by routing profile syncing through `AuthService`.
+- Fixed critical logout bug in `Sidebar.jsx` by implementing active session purging via `useAuth`.
+- Replaced semantic `NavLink` with a native `button` for logout action and updated `Sidebar.css` layout resets.
+- Standardized documentation across changed modules using concise JSDoc syntax in English.
