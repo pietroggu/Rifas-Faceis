@@ -112,10 +112,4 @@ button.sidebar-link {
 /* Utility Position Modifiers */
 .bottom {
   margin-top: auto;
-}refactor(arch): overhaul service layer, decouple auth context, and fix logout
-
-- Refactored `RaffleService` and introduced `TicketService` to handle data enrichment and input validation.
-- Decoupled `AuthContext` from direct API infrastructure by routing profile syncing through `AuthService`.
-- Fixed critical logout bug in `Sidebar.jsx` by implementing active session purging via `useAuth`.
-- Replaced semantic `NavLink` with a native `button` for logout action and updated `Sidebar.css` layout resets.
-- Standardized documentation across changed modules using concise JSDoc syntax in English.
+}
