@@ -1,40 +1,59 @@
 import React from "react";
 
 /**
- * Componente de input reutilizável
- * @param {string} label - Texto do label
- * @param {string} type - Tipo do input
- * @param {string} value - Valor controlado
- * @param {function} onChange - Função de mudança
- * @param {string} error - Mensagem de erro
+ * Input component provides a reusable styled form input field with optional label and error display.
  */
 function Input({ label, type = "text", value, onChange, error }) {
-    return (
-        <div style={{ marginBottom: "15px" }}>
-            <label style={{ display: "block", marginBottom: "5px" }}>
-                {label}
-            </label>
+  return (
+    <div style={styles.container}>
+      {/* Renders the label element dynamically if text is supplied */}
+      {label && <label style={styles.label}>{label}</label>}
 
-            <input
-                type={type}
-                value={value}
-                onChange={onChange}
-                style={{
-                    height: "30px",
-                    width: "90%",
-                    padding: "5px",
-                    borderRadius: "5px",
-                    border: error ? "1px solid red" : "1px solid #ccc"
-                }}
-            />
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        style={{
+          ...styles.input,
+          borderColor: error ? "#ef4444" : "#cbd5e1",
+        }}
+      />
 
-            {error && (
-                <span style={{ color: "red", fontSize: "12px" }}>
-                    {error}
-                </span>
-            )}
-        </div>
-    );
+      {/* Conditional Error Box Messaging view injection */}
+      {error && <span style={styles.errorText}>{error}</span>}
+    </div>
+  );
 }
+
+const styles = {
+  container: {
+    width: "100%",
+    marginBottom: "16px",
+    textAlign: "left",
+  },
+  label: {
+    display: "block",
+    marginBottom: "6px",
+    fontSize: "0.875rem",
+    fontWeight: "600",
+    color: "#475569",
+  },
+  input: {
+    width: "100%",
+    padding: "10px 12px",
+    fontSize: "0.95rem",
+    borderRadius: "6px",
+    border: "1px solid",
+    outline: "none",
+    boxSizing: "border-box",
+    transition: "border-color 0.2s ease",
+  },
+  errorText: {
+    color: "#ef4444",
+    fontSize: "0.75rem",
+    marginTop: "4px",
+    display: "block",
+  },
+};
 
 export default Input;

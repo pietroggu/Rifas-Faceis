@@ -1,97 +1,95 @@
 import React, { useEffect, useState } from "react";
 import RaffleCard from "../components/RaffleCard";
+import { raffleApi } from "../api/raffle.api"; // Unified api module instance
 
 /**
- * Página principal que lista as rifas buscadas do backend
+ * Main dashboard page that displays and filters all available raffles.
  */
 function Home() {
-  const [rifas, setRifas] = useState([]);
+  const [raffles, setRaffles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState(null);
-  const [busca, setBusca] = useState("");
-  const [categoria, setCategoria] = useState("todas");
-  const [ordenacao, setOrdenacao] = useState("padrao");
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("todas");
+  const [sortBy, setSortBy] = useState("padrao");
 
   useEffect(() => {
-    async function fetchRifas() {
+    async function fetchRaffles() {
       try {
-        const response = await fetch("http://localhost:3000/rifas");
-        if (!response.ok) {
-          throw new Error("Erro ao buscar rifas");
-        }
-        const data = await response.json();
-        setRifas(data);
+        const data = await raffleApi.getAllRaffles();
+        // Fallback check to avoid structural mapping runtime crashes
+        setRaffles(Array.isArray(data) ? data : []);
       } catch (err) {
-        setErro(err.message);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchRifas();
+    fetchRaffles();
   }, []);
 
-  const categorias = [
+  // Dynamically maps unique available categories based on Prisma Model English key
+  const categories = [
     "todas",
-    ...new Set(rifas.map((r) => r.categoria).filter(Boolean)),
+    ...new Set(raffles.map((r) => r.category).filter(Boolean)),
   ];
 
-  const rifasFiltradas = rifas
-    .filter((rifa) => {
-      const termoBusca = busca.toLowerCase();
-      const nomeMatch = rifa.nome.toLowerCase().includes(termoBusca);
-      const instituicaoMatch = rifa.instituicao
-        ? rifa.instituicao.toLowerCase().includes(termoBusca)
-        : false;
-      const categoriaMatch =
-        categoria === "todas" || rifa.categoria === categoria;
+  /**
+   * In-memory filtering and sorting engine computed on state mutations.
+   */
+  const filteredRaffles = raffles
+    .filter((raffle) => {
+      const searchTerm = search.toLowerCase();
+      
+      // Aligned fields with your exact Prisma Model structure
+      const raffleName = (raffle.name || "").toLowerCase();
+      const raffleDescription = (raffle.description || "").toLowerCase();
+      const raffleCategory = raffle.category || "";
 
-      return (nomeMatch || instituicaoMatch) && categoriaMatch;
+      const nameMatch = raffleName.includes(searchTerm);
+      const descriptionMatch = raffleDescription.includes(searchTerm);
+      const categoryMatch = category === "todas" || raffleCategory === category;
+
+      // Allows search matches targeting either the raffle name or its description context
+      return (nameMatch || descriptionMatch) && categoryMatch;
     })
     .sort((a, b) => {
-      if (ordenacao === "menor_preco") {
-        return a.valor_numero - b.valor_numero;
-      }
-      if (ordenacao === "maior_preco") {
-        return b.valor_numero - a.valor_numero;
-      }
-      if (ordenacao === "nome_az") {
-        return a.nome.localeCompare(b.nome);
-      }
-      if (ordenacao === "nome_za") {
-        return b.nome.localeCompare(a.nome);
-      }
+      // Numerical sorting references mapped to your schema 'ticketPrice' property
+      const priceA = a.ticketPrice || 0;
+      const priceB = b.ticketPrice || 0;
+      const nameA = a.name || "";
+      const nameB = b.name || "";
+
+      if (sortBy === "menor_preco") return priceA - priceB;
+      if (sortBy === "maior_preco") return priceB - priceA;
+      if (sortBy === "nome_az") return nameA.localeCompare(nameB);
+      if (sortBy === "nome_za") return nameB.localeCompare(nameA);
       return 0;
     });
 
-  if (loading) {
-    return <p style={styles.center}>Carregando rifas...</p>;
-  }
-
-  if (erro) {
-    return <p style={styles.erro}>Erro: {erro}</p>;
-  }
+  if (loading) return <p style={styles.center}>Carregando rifas...</p>;
+  if (error) return <p style={styles.errorText}>Erro: {error}</p>;
 
   return (
     <div style={styles.container}>
       <h1 style={styles.center}>🎯 Rifas Disponíveis</h1>
 
-      {/* Barra de pesquisa e filtros */}
-      <div style={styles.controles}>
+      <div style={styles.controls}>
         <input
           type="text"
-          placeholder="Pesquisar por nome ou instituição..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          style={styles.inputBusca}
+          placeholder="Pesquisar por nome ou descrição..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={styles.searchInput}
         />
 
         <select
-          value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
           style={styles.select}
         >
-          {categorias.map((cat) => (
+          {categories.map((cat) => (
             <option key={cat} value={cat}>
               {cat === "todas" ? "Todas as categorias" : cat}
             </option>
@@ -99,8 +97,8 @@ function Home() {
         </select>
 
         <select
-          value={ordenacao}
-          onChange={(e) => setOrdenacao(e.target.value)}
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
           style={styles.select}
         >
           <option value="padrao">Ordem padrão</option>
@@ -111,23 +109,24 @@ function Home() {
         </select>
       </div>
 
-      {rifas.length === 0 ? (
+      {raffles.length === 0 ? (
         <p style={styles.center}>Nenhuma rifa disponível no momento.</p>
-      ) : rifasFiltradas.length === 0 ? (
+      ) : filteredRaffles.length === 0 ? (
         <p style={styles.center}>Nenhuma rifa encontrada para essa pesquisa.</p>
       ) : (
         <div style={styles.grid}>
-          {rifasFiltradas.map((rifa) => (
-            <div style={styles.cardWrapper} key={rifa.id}>
+          {filteredRaffles.map((raffle) => (
+            <div style={styles.cardWrapper} key={raffle.id}>
+              {/* Maps backend properties dynamically into your component parameters */}
               <RaffleCard
-                id={rifa.id}
-                nome={rifa.nome}
-                descricao={rifa.descricao}
-                valor_numero={rifa.valor_numero}
-                categoria={rifa.categoria}
-                instituicao={rifa.instituicao}
-                quantidade_numeros={rifa.quantidade_numeros}
-                data_sorteio={rifa.data_sorteio}
+                id={raffle.id}
+                nome={raffle.name}
+                descricao={raffle.description}
+                valor_numero={raffle.ticketPrice}
+                categoria={raffle.category}
+                instituicao={raffle.prize} // Fallback parameter mapping to prize if needed
+                quantidade_numeros={raffle.totalTickets}
+                data_sorteio={raffle.drawDate}
               />
             </div>
           ))}
@@ -138,57 +137,14 @@ function Home() {
 }
 
 const styles = {
-  container: {
-    padding: "20px",
-    textAlign: "center",
-  },
-  center: {
-    textAlign: "center",
-    padding: "10px",
-    margin: "5px",
-  },
-  erro: {
-    textAlign: "center",
-    color: "red",
-    marginTop: "20px",
-  },
-  cardWrapper: {
-    flex: "1 1 280px",
-    maxWidth: "320px",
-    width: "100%",
-  },
-  grid: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "20px",
-    justifyContent: "center",
-    marginTop: "20px",
-  },
-  controles: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "10px",
-    justifyContent: "center",
-    marginTop: "20px",
-    marginBottom: "10px",
-  },
-  inputBusca: {
-    padding: "10px 14px",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
-    fontSize: "14px",
-    minWidth: "280px",
-    outline: "none",
-  },
-  select: {
-    padding: "10px 14px",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
-    fontSize: "14px",
-    cursor: "pointer",
-    backgroundColor: "#fff",
-    outline: "none",
-  },
+  container: { padding: "20px", textAlign: "center" },
+  center: { textAlign: "center", padding: "10px", margin: "5px" },
+  errorText: { textAlign: "center", color: "red", marginTop: "20px" },
+  cardWrapper: { flex: "1 1 280px", maxWidth: "320px", width: "100%" },
+  grid: { display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", marginTop: "20px" },
+  controls: { display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", marginTop: "20px", marginBottom: "10px" },
+  searchInput: { padding: "10px 14px", borderRadius: "8px", border: "1px solid #ccc", fontSize: "14px", minWidth: "280px", outline: "none" },
+  select: { padding: "10px 14px", borderRadius: "8px", border: "1px solid #ccc", fontSize: "14px", cursor: "pointer", backgroundColor: "#fff", outline: "none" },
 };
 
 export default Home;

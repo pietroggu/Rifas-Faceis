@@ -28,20 +28,20 @@ function Sidebar() {
             <Home size={18} /> Home
           </NavLink>
 
-          <NavLink to="/suasrifas" onClick={() => setOpen(false)} className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+          <NavLink to="/myRaffles" onClick={() => setOpen(false)} className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
             <Ticket size={18} /> Minhas rifas
           </NavLink>
 
-          <NavLink to="/ajudas" onClick={() => setOpen(false)} className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+          <NavLink to="/faq" onClick={() => setOpen(false)} className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
             <HelpCircle size={18} /> Ajuda
           </NavLink>
 
-          <NavLink to="/boss" onClick={() => setOpen(false)} className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+          <NavLink to="/adminDashboard" onClick={() => setOpen(false)} className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
             <Lock size={18} /> Acesso privado
           </NavLink>
         </nav>
 
-        <NavLink to="/dados" onClick={() => setOpen(false)} className="sidebar-link bottom">
+        <NavLink to="/profile" onClick={() => setOpen(false)} className="sidebar-link bottom">
           <User size={18} /> Meus dados
         </NavLink>
 

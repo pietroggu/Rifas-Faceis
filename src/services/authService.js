@@ -1,53 +1,60 @@
+import { authApi } from "../api/auth.api";
+
 /**
- * Serviço de autenticação (template)
- * Simula chamadas para API
+ * Authentication Service Layer.
+ * Orchestrates local persistence storage rules and handles clean data formatting workflows.
  */
 class AuthService {
-    /**
-     * Simula login do usuário
-     * @param {string} email 
-     * @param {string} senha 
-     * @returns {Promise<Object>}
-     */
-    static async login(email, senha) {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                // Simulação de validação
-                if (email === "admin@rifas.com" && senha === "123456") {
-                    resolve({
-                        token: "fake-jwt-token",
-                        user: {
-                            nome: "Administrador",
-                            email
-                        }
-                    });
-                } else {
-                    reject(new Error("Credenciais inválidas"));
-                }
-            }, 1000);
-        });
+  /**
+   * Process operational user login state and orchestrate storage triggers.
+   * @param {string} email 
+   * @param {string} password 
+   * @returns {Promise<Object>} Authenticated user object and token payload
+   */
+  static async login(email, password) {
+    // Standardized to call authApi directly instead of userApi to prevent architectural layout pollution
+    const data = await authApi.login({ email, password });
+    
+    if (data?.token) {
+      this.saveAuth(data);
     }
+    
+    return data;
+  }
 
-    /**
-     * Salva autenticação no localStorage
-     */
-    static saveAuth(data) {
-        localStorage.setItem("auth", JSON.stringify(data));
-    }
+  /**
+   * Write session variables securely to localStorage.
+   * @param {Object} authData - Contains { token, user }
+   */
+  static saveAuth(authData) {
+    localStorage.setItem("token", authData.token);
+    localStorage.setItem("user", JSON.stringify(authData.user));
+  }
 
-    /**
-     * Remove autenticação
-     */
-    static logout() {
-        localStorage.removeItem("auth");
-    }
+  /**
+   * Purge all local persistence session variables to trigger reactive logout.
+   */
+  static logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+  }
 
-    /**
-     * Verifica se usuário está logado
-     */
-    static isAuthenticated() {
-        return !!localStorage.getItem("auth");
-    }
+  /**
+   * Evaluate if a session token key is currently registered locally.
+   * @returns {boolean} Authenticated baseline validation state
+   */
+  static isAuthenticated() {
+    return !!localStorage.getItem("token");
+  }
+
+  /**
+   * Safely look up and parse local user profile snapshots.
+   * @returns {Object|null} Cached user metadata object
+   */
+  static getCurrentUser() {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+  }
 }
 
 export default AuthService;

@@ -1,41 +1,46 @@
 import React from "react";
 
 /**
- * Componente de número da rifa
- * @param {number} number
- * @param {boolean} sold
- * @param {Function} onClick
+ * NumberCard represents an individual raffle ticket slot option item.
  */
 function NumberCard({ number, sold, onClick }) {
-    function handleClick() {
-        if (!sold && onClick) {
-            onClick(number);
-        }
+  /**
+   * Dispatches click actions back to root layout if ticket is available.
+   */
+  function handleClick() {
+    if (!sold && onClick) {
+      onClick(number);
     }
+  }
 
-    return (
-        <div
-            onClick={handleClick}
-            style={{
-                width: "50px",
-                height: "50px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "8px",
-                fontWeight: "bold",
-                color: "#fff",
-                cursor: sold ? "not-allowed" : "pointer",
-                background: sold ? "#bdbdbd" : "#4caf50",
-                transition: "0.2s",
-                boxShadow: sold
-                    ? "none"
-                    : "0 2px 6px rgba(0,0,0,0.2)"
-            }}
-        >
-            {number}
-        </div>
-    );
+  // Dynamic composition of base structural style attributes depending on backend state
+  const computedCardStyle = {
+    ...styles.base,
+    backgroundColor: sold ? "#cbd5e1" : "#10b981",
+    cursor: sold ? "not-allowed" : "pointer",
+    boxShadow: sold ? "none" : "0 4px 6px -1px rgba(0,0,0,0.1)",
+  };
+
+  return (
+    <div onClick={handleClick} style={computedCardStyle}>
+      {number}
+    </div>
+  );
 }
+
+const styles = {
+  base: {
+    width: "50px",
+    height: "50px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    color: "#ffffff",
+    transition: "transform 0.15s ease, background-color 0.15s ease",
+    userSelect: "none",
+  },
+};
 
 export default NumberCard;

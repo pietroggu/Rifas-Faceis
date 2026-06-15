@@ -1,16 +1,76 @@
 .raffle-card {
-  width: 250px;
-  padding: 20px;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 320px;
+  padding: 24px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   cursor: pointer;
-  transition: all 0.2s ease;
-
-  border: 2px solid transparent;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid #e2e8f0;
+  text-align: left;
+  box-sizing: border-box;
 }
 
 .raffle-card:hover {
-  border: 2px solid #2563EB;
-  transform: scale(1.03);
+  border-color: #2563eb;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1);
+}
+
+.raffle-card-title {
+  font-size: 1.25rem;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.raffle-card-tag {
+  display: inline-block;
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  margin-bottom: 12px;
+}
+
+.raffle-card-description {
+  font-size: 0.9rem;
+  color: #475569;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.raffle-card-info {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0 0 12px 0;
+}
+
+.raffle-card-footer {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+  margin-top: 12px;
+  display: flex;
+  justifyContent: space-between;
+  font-size: 0.9rem;
+}
+
+.raffle-card-price {
+  margin: 0;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.raffle-card-tickets {
+  margin: 0;
+  color: #64748b;
+}
+
+.raffle-card-date {
+  font-size: 0.85rem;
+  color: #2563eb;
+  margin: 12px 0 0 0;
+  font-weight: 500;
 }

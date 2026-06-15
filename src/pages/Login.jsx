@@ -1,76 +1,79 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/Input";
-import AuthService from "../services/authService";
+import { useAuth } from "../context/AuthContext"; // Integrated the global unified auth context engine
 import logo from "../assets/logo.png";
 
+/**
+ * Authentication login interface screen.
+ * Validates, intercepts credentials forms, and dispatches sessions state modifications hooks.
+ */
 function Login() {
     const [email, setEmail] = useState("");
-    const [senha, setSenha] = useState("");
-    const [erros, setErros] = useState({});
-    const [loading, setLoading] = useState(false);
-    const [erroGeral, setErroGeral] = useState("");
-
+    const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState("");
+    
+    // Deconstruct dynamic loading triggers and global context dispatcher state
+    const { loginUser, loading } = useAuth();
     const navigate = useNavigate();
 
-    function validar() {
-        const novosErros = {};
+    /**
+     * Client-side validation processor inspecting constraints layout compliance.
+     */
+    function validate() {
+        const newErrors = {};
 
         if (!email) {
-            novosErros.email = "Email é obrigatório";
+            newErrors.email = "Email é obrigatório";
         } else if (!/\S+@\S+\.\S+/.test(email)) {
-            novosErros.email = "Email inválido";
+            newErrors.email = "Email inválido";
         }
 
-        if (!senha) {
-            novosErros.senha = "Senha é obrigatória";
-        } else if (senha.length < 6) {
-            novosErros.senha = "Mínimo 6 caracteres";
+        if (!password) {
+            newErrors.password = "Senha é obrigatória";
+        } else if (password.length < 6) {
+            newErrors.password = "Mínimo 6 caracteres";
         }
 
-        return novosErros;
+        return newErrors;
     }
 
+    /**
+     * Form submit event interceptor dispatching validation chains and session bindings.
+     */
     async function handleLogin(e) {
         e.preventDefault();
 
-        const validacao = validar();
-
-        if (Object.keys(validacao).length > 0) {
-            setErros(validacao);
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
             return;
         }
 
-        setErros({});
-        setErroGeral("");
-        setLoading(true);
+        setErrors({});
+        setGeneralError("");
 
         try {
-            const response = await AuthService.login(email, senha);
-
-            AuthService.saveAuth(response);
-
+            // Triggers context pipeline to execute login, sync state, and persist keys cleanly
+            await loginUser(email, password);
             navigate("/home");
         } catch (error) {
-            setErroGeral(error.message);
-        } finally {
-            setLoading(false);
+            setGeneralError(error.message);
         }
     }
 
     return (
         <div style={styles.container}>
             <form onSubmit={handleLogin} style={styles.card}>
-                
-                {}
                 <div style={styles.header}>
                     <img src={logo} alt="Logo" style={styles.logo} />
-                    <h3 className="header"> Login</h3>
+                    <h3 className="header">Login</h3>
                 </div>
 
-                {erroGeral && (
+                {generalError && (
                     <div style={styles.errorBox}>
-                        {erroGeral}
+                        {generalError}
                     </div>
                 )}
 
@@ -79,20 +82,21 @@ function Login() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    error={erros.email}
+                    error={errors.email}
                 />
 
                 <Input
                     label="Senha"
                     type="password"
-                    value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
-                    error={erros.senha}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    error={errors.password}
                 />
 
                 <button type="submit" disabled={loading} style={styles.button}>
                     {loading ? "Entrando..." : "Entrar"}
                 </button>
+                
                 <div style={styles.registerContainer}>
                     <span>Não tem conta? </span>
                     <span 
@@ -122,7 +126,6 @@ const styles = {
         borderRadius: "12px",
         width: "320px",
         boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-        animation: "fadeIn 0.3s ease-in-out"
     },
     header: {
         textAlign: "center",
@@ -133,14 +136,6 @@ const styles = {
         height: "auto",
         objectFit: "contain",
         margin: "0px"
-    },
-    title: {
-        margin: "10px 0 5px",
-        fontSize: "24px"
-    },
-    subtitle: {
-        fontSize: "15px",
-        color: "#666"
     },
     errorBox: {
         background: "#ffe6e6",
@@ -166,7 +161,6 @@ const styles = {
         textAlign: "center",
         fontSize: "14px"
     },
-
     registerLink: {
         color: "#4facfe",
         cursor: "pointer",

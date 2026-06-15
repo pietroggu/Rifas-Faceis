@@ -1,69 +1,91 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/Input";
+import { userApi } from "../api/user.api";
 import logo from "../assets/logo.png";
 
 function Register() {
+    // Form state definitions
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
-    const [telefone, setTelefone] = useState("");
-    const [senha, setSenha] = useState("");
-    const [erros, setErros] = useState({});
+    const [phone, setPhone] = useState("");
+    const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
-    const [erroGeral, setErroGeral] = useState("");
+    const [generalError, setGeneralError] = useState("");
 
     const navigate = useNavigate();
 
-    function validar() {
-        const novosErros = {};
+    /**
+     * Validates input fields before registration submission.
+     * @returns {Object} Found errors mapping fields to messages
+     */
+    function validate() {
+        const newErrors = {};
 
         if (!email) {
-            novosErros.email = "Email é obrigatório";
+            newErrors.email = "Email é obrigatório";
         } else if (!/\S+@\S+\.\S+/.test(email)) {
-            novosErros.email = "Email inválido";
+            newErrors.email = "Email inválido";
         }
 
-        if (!senha) {
-            novosErros.senha = "Senha é obrigatória";
-        } else if (senha.length < 6) {
-            novosErros.senha = "Mínimo 6 caracteres";
+        if (!password) {
+            newErrors.password = "Senha é obrigatória";
+        } else if (password.length < 6) {
+            newErrors.password = "Mínimo 6 caracteres";
         }
 
-        return novosErros;
+        return newErrors;
     }
 
+    /**
+     * Handles the registration form submission.
+     * @param {Event} e
+     */
     async function handleRegister(e) {
         e.preventDefault();
 
-        const validacao = validar();
+        const validationErrors = validate();
 
-        if (Object.keys(validacao).length > 0) {
-            setErros(validacao);
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
             return;
         }
 
-        setErros({});
-        setErroGeral("");
+        setErrors({});
+        setGeneralError("");
         setLoading(true);
 
-        setTimeout(() => {
-            navigate("/"); // volta pro login
-        }, 500);
+        try {
+            // Send payload to real API
+            await userApi.register({
+                email,
+                name,
+                phone,
+                password
+            });
+
+            // Redirect to login page on success
+            navigate("/"); 
+        } catch (error) {
+            setGeneralError(error.message);
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
         <div style={styles.container}>
             <form onSubmit={handleRegister} style={styles.card}>
                 
-                {}
                 <div style={styles.header}>
                     <img src={logo} alt="Logo" style={styles.logo} />
                     <p style={styles.subtitle}>Crie sua conta para participar das rifas</p>
                 </div>
 
-                {erroGeral && (
+                {generalError && (
                     <div style={styles.errorBox}>
-                        {erroGeral}
+                        {generalError}
                     </div>
                 )}
 
@@ -72,7 +94,7 @@ function Register() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    error={erros.email}
+                    error={errors.email}
                 />
 
                 <Input
@@ -81,26 +103,26 @@ function Register() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                 />
+                
                 <Input
                     label="Telefone"
                     type="text"
-                    value={telefone}
-                    onChange={(e) => setTelefone(e.target.value)}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                 />
 
                 <Input
                     label="Senha"
                     type="password"
-                    value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
-                    error={erros.senha}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    error={errors.password}
                 />
 
                 <button type="submit" disabled={loading} style={styles.button}>
                     {loading ? "Registrando..." : "Registre-se"}
                 </button>
 
-                {/* 🔥 VOLTAR PRO LOGIN */}
                 <div style={styles.registerContainer}>
                     <span>Já tem conta? </span>
                     <span 

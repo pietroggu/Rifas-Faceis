@@ -1,40 +1,60 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; // Hooked into unified authentication context
 import NumberCard from "../components/NumberCard";
 import PurchaseModal from "../components/PurchaseModal";
+import RaffleService from "../services/raffleService";
 
+/**
+ * Raffle dashboard grid matrix management component.
+ */
 function Raffle() {
     const { id } = useParams();
+    const { user } = useAuth(); // Extracted reactive user profile context dynamically with zero redundancies
 
     const [raffle, setRaffle] = useState(null);
-    const [numeros, setNumeros] = useState([]);
+    const [numbers, setNumbers] = useState([]);
     const [loading, setLoading] = useState(true);
-
     const [selectedNumber, setSelectedNumber] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
 
     useEffect(() => {
         async function fetchData() {
             try {
-                // Busca os dados reais da rifa no backend
-                const raffleRes = await fetch(`http://localhost:3000/rifas/${id}`);
-                const raffleData = await raffleRes.json();
+                setLoading(true);
+                // Unified request capturing full single raffle data structure parameters
+                const raffleData = await RaffleService.getRaffleById(id);
                 setRaffle(raffleData);
 
-                // Busca os números da rifa
-                const numerosRes = await fetch(`http://localhost:3000/rifas/${id}/numeros`);
-                const numerosData = await numerosRes.json();
-                setNumeros(numerosData);
+                // Best Practice: Generate layout matrix dynamically based on single data payload property numbers
+                const totalTickets = raffleData.totalTickets || raffleData.total_bilhetes || 100;
+                const soldTickets = raffleData.tickets || raffleData.bilhetes || [];
 
+                const generatedGrid = Array.from({ length: totalTickets }, (_, index) => {
+                    const currentNumber = index + 1;
+                    const isSold = soldTickets.some(
+                        (ticket) => (ticket.number ?? ticket.numero) === currentNumber
+                    );
+
+                    return {
+                        id: currentNumber,
+                        numero: currentNumber,
+                        vendido: isSold ? 1 : 0
+                    };
+                });
+
+                setNumbers(generatedGrid);
             } catch (error) {
-                console.error("Erro ao carregar rifa:", error);
-                alert("Erro ao carregar rifa");
+                console.error("Error building dashboard structural views:", error);
+                alert("Erro ao carregar os detalhes da rifa");
             } finally {
                 setLoading(false);
             }
         }
 
-        fetchData();
+        if (id) {
+            fetchData();
+        }
     }, [id]);
 
     function handleNumberClick(number) {
@@ -44,53 +64,40 @@ function Raffle() {
 
     async function handleConfirmPurchase(data) {
         try {
-            const response = await fetch(
-                `http://localhost:3000/rifas/${id}/numeros/${data.number}/comprar`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ nome: data.name, telefone: data.phone })
-                }
-            );
+            // FIXED: Payload translated cleanly to English models required by Prisma backend properties
+            await RaffleService.purchaseNumber(id, data.number, {
+                name: data.name,
+                phone: data.phone
+            });
 
-            const result = await response.json();
-
-            if (!response.ok) {
-                alert(result.erro);
-                return;
-            }
-
-            alert(`Compra realizada!\nNúmero: ${data.number}\nNome: ${data.name}`);
+            alert(`Compra realizada com sucesso!\nNúmero: ${data.number}`);
             setModalOpen(false);
 
-            // Atualiza o número na lista local para aparecer como vendido imediatamente
-            setNumeros(prev =>
+            // Instant mutations state trigger to repaint local item component UI
+            setNumbers(prev =>
                 prev.map(n =>
                     n.numero === data.number ? { ...n, vendido: 1 } : n
                 )
             );
-
         } catch (err) {
-            alert("Erro ao registrar compra. Tente novamente.");
+            alert(err.message || "Erro ao registrar compra. Tente novamente.");
         }
     }
 
-    if (loading) return <p>Carregando...</p>;
-
-    if (!raffle) return <p>Rifa não encontrada</p>;
+    if (loading) return <p style={styles.stateText}>Carregando...</p>;
+    if (!raffle) return <p style={styles.stateText}>Rifa não encontrada</p>;
 
     return (
         <div style={styles.container}>
-            <h1>{raffle.nome}</h1>
-
-            <p>{raffle.descricao}</p>
+            <h1>{raffle.nome || raffle.name}</h1>
+            <p>{raffle.descricao || raffle.description}</p>
             
-            <p>Instituição responsável: {raffle.instituicao}</p>
-            <p>Categoria: {raffle.categoria}</p>
-            <p>Valor por número: R$ {raffle.valor_numero}</p>
+            <p>Instituição responsável: {raffle.instituicao || raffle.institution}</p>
+            <p>Categoria: {raffle.categoria || raffle.category}</p>
+            <p>Valor por número: R$ {(raffle.valor_numero || raffle.ticketPrice || 0).toFixed(2)}</p>
 
             <div style={styles.grid}>
-                {numeros.map((num) => (
+                {numbers.map((num) => (
                     <NumberCard
                         key={num.id}
                         number={num.numero}
@@ -103,9 +110,10 @@ function Raffle() {
             <PurchaseModal
                 open={modalOpen}
                 number={selectedNumber}
-                price={raffle.valor_numero}
+                price={raffle.valor_numero || raffle.ticketPrice}
                 onClose={() => setModalOpen(false)}
                 onConfirm={handleConfirmPurchase}
+                user={user} // Directly pass global context profile variables downwards safely
             />
         </div>
     );
@@ -113,8 +121,14 @@ function Raffle() {
 
 const styles = {
     container: {
-        padding: "20px",
+        padding: "40px 20px",
         textAlign: "center"
+    },
+    stateText: {
+        textAlign: "center",
+        padding: "40px",
+        fontSize: "1.1rem",
+        color: "#64748b"
     },
     grid: {
         display: "grid",
