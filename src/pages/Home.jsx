@@ -46,14 +46,12 @@ function Home() {
       const searchTerm = search.toLowerCase();
       
       const raffleName = (raffle.name || "").toLowerCase();
-      const raffleDescription = (raffle.description || "").toLowerCase();
       const raffleCategory = raffle.category || "";
 
       const nameMatch = raffleName.includes(searchTerm);
-      const descriptionMatch = raffleDescription.includes(searchTerm);
       const categoryMatch = category === "todas" || raffleCategory === category;
 
-      return (nameMatch || descriptionMatch) && categoryMatch;
+      return nameMatch && categoryMatch;
     })
     .sort((a, b) => {
       const priceA = a.ticketPrice || 0;
@@ -79,7 +77,7 @@ function Home() {
       <div style={styles.controls}>
         <input
           type="text"
-          placeholder="Pesquisar por nome ou descrição..."
+          placeholder="Pesquisar rifas..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={styles.searchInput}
@@ -109,6 +107,12 @@ function Home() {
           <option value="nome_za">Nome Z → A</option>
         </select>
       </div>
+      <p style={styles.resultCount}>
+        {filteredRaffles.length}{" "}
+        {filteredRaffles.length === 1
+          ? "rifa encontrada"
+          : "rifas encontradas"}
+      </p>
 
       {raffles.length === 0 ? (
         <p style={styles.center}>Nenhuma rifa disponível no momento.</p>
@@ -122,7 +126,6 @@ function Home() {
               <RaffleCard
                 id={raffle.id}
                 name={raffle.name}
-                description={raffle.description}
                 prize={raffle.prize}
                 category={raffle.category}
                 ticketPrice={raffle.ticketPrice}
@@ -151,6 +154,14 @@ const styles = {
   controls: { display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", marginTop: "20px", marginBottom: "10px" },
   searchInput: { padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "14px", minWidth: "280px", outline: "none", color: "#334155" },
   select: { padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "14px", cursor: "pointer", backgroundColor: "#fff", outline: "none", color: "#334155" },
+  
+  resultCount: {
+  textAlign: "center",
+  color: "#64748b",
+  marginTop: "10px",
+  marginBottom: "10px",
+  fontSize: "14px",
+},
 };
 
 export default Home;

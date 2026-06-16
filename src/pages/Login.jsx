@@ -26,9 +26,9 @@ function Login() {
 
     useEffect(() => {
         if (successMessage) {
-            window.history.replaceState({}, document.title);
+            navigate(location.pathname, { replace: true });
         }
-    }, [successMessage]);
+    }, [successMessage, navigate, location.pathname]);
 
     const buttonStyle = {
         ...styles.button,

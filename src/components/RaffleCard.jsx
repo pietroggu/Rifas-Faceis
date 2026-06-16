@@ -8,13 +8,11 @@ import "./RaffleCard.css";
  */
 function RaffleCard({ 
   id, 
-  name, 
-  description, 
+  name,  
   prize, 
   category, 
   ticketPrice, 
   totalTickets, 
-  drawDate,
   imageUrl,
   formattedPrice,
   salesProgress,
@@ -55,8 +53,6 @@ function RaffleCard({
         <p className="raffle-card-prize">
           🏆 Prêmio: <strong>{prize}</strong>
         </p>
-        
-        {description && <p className="raffle-card-description">{description}</p>}
         
         {/* Linear Loading Progress Bar tracking actual sales volume */}
         <div className="raffle-card-progress-section">
