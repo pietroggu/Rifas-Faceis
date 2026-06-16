@@ -1,17 +1,16 @@
 import { raffleApi } from "../api/raffle.api";
+import { ticketApi } from "../api/ticket.api";
 
 /**
- * Service class orchestrating database entity communications, payload schema validations, 
- * and structural presentation-ready conversions for Raffle records.
- * * @class RaffleService
+ * Service class orchestrating raffle operations.
+ * Handles data enrichment, validation, and API coordination.
+ * Updated to use new API endpoints.
  */
 class RaffleService {
   /**
-   * Fetches all registered database raffle entries and enriches them for interface consumption.
-   * * @static
-   * @async
-   * @returns {Promise<Array<Object>>} A promise that resolves to an array of enriched, layout-ready raffle objects.
-   * @throws {Error} If the API request fails.
+   * Fetches all raffles and enriches them for UI consumption.
+   * @returns {Promise<Array<Object>>} Enriched raffle objects
+   * @throws {Error} If the API request fails
    */
   static async getAllRaffles() {
     const raffles = await raffleApi.getAllRaffles();
@@ -19,12 +18,10 @@ class RaffleService {
   }
 
   /**
-   * Fetches a single database raffle row matched against its primary tracking ID key.
-   * * @static
-   * @async
-   * @param {string|number} id - Target lookup primary identifier.
-   * @returns {Promise<Object>} A promise that resolves to the formatted and enriched raffle model object.
-   * @throws {Error} If the raffle is not found or the API request fails.
+   * Fetches a single raffle by ID.
+   * @param {string|number} id - Raffle identifier
+   * @returns {Promise<Object>} Enriched raffle object
+   * @throws {Error} If the raffle is not found
    */
   static async getRaffleById(id) {
     const raffle = await raffleApi.getById(id);
@@ -32,42 +29,10 @@ class RaffleService {
   }
 
   /**
-   * Validates authentication parameters and dispatches a single ticket slot purchase.
-   * * @static
-   * @async
-   * @param {string|number} raffleId - Target raffle database tracking key.
-   * @param {number} number - Matrix index position of the chosen ticket element.
-   * @param {Object} buyerData - Persona context schema fields.
-   * @param {number} buyerData.userId - The authenticated user ID performing the purchase.
-   * @param {string} [buyerData.name] - Optional buyer name for logs or display.
-   * @param {string} [buyerData.phone] - Optional buyer phone number.
-   * @returns {Promise<Object>} A promise that resolves to the purchase confirmation payload.
-   * @throws {Error} If the user session is missing or unauthenticated.
-   */
-  static async purchaseNumber(raffleId, number, buyerData) {
-    if (!buyerData?.userId) {
-      throw new Error("Authentication is required to reserve a ticket.");
-    }
-
-    return await raffleApi.buyNumber(raffleId, number, {
-      userId: buyerData.userId,
-      name: buyerData.name?.trim(),
-      phone: buyerData.phone?.replace(/\D/g, ""),
-    });
-  }
-
-  /**
-   * Validates required data structures and dispatches a new raffle registration.
-   * * @static
-   * @async
-   * @param {Object} raffleData - The raffle payload configuration.
-   * @param {string} raffleData.name - Title/Name of the raffle.
-   * @param {string} raffleData.prize - Description of the prize.
-   * @param {number} raffleData.ticketPrice - Cost per single ticket unit.
-   * @param {number} raffleData.totalTickets - Total available capacity of ticket spots.
-   * @param {number} raffleData.authorId - User ID of the administrator creating the raffle.
-   * @returns {Promise<Object>} A promise that resolves to the created raffle instance.
-   * @throws {Error} If any mandatory schema field is missing.
+   * Creates a new raffle.
+   * @param {Object} raffleData - Raffle creation payload
+   * @returns {Promise<Object>} Created raffle instance
+   * @throws {Error} If validation fails
    */
   static async createRaffle(raffleData) {
     const { name, prize, ticketPrice, totalTickets, authorId } = raffleData;
@@ -80,12 +45,24 @@ class RaffleService {
   }
 
   /**
-   * Dispatches a raffle deletion request to the API layer.
-   * * @static
-   * @async
-   * @param {string|number} id - Target instance tracking key identifier.
-   * @returns {Promise<Object>} A promise that resolves to the deletion metrics response.
-   * @throws {Error} If the provided identifier is invalid or missing.
+   * Updates an existing raffle.
+   * @param {string|number} id - Raffle identifier
+   * @param {Object} raffleData - Updated raffle data
+   * @returns {Promise<Object>} Updated raffle
+   * @throws {Error} If validation fails
+   */
+  static async updateRaffle(id, raffleData) {
+    if (!id) {
+      throw new Error("Invalid raffle ID provided for update.");
+    }
+    return await raffleApi.update(id, raffleData);
+  }
+
+  /**
+   * Deletes a raffle.
+   * @param {string|number} id - Raffle identifier
+   * @returns {Promise<Object>} Deletion confirmation
+   * @throws {Error} If the ID is invalid
    */
   static async deleteRaffle(id) {
     if (!id) {
@@ -95,17 +72,37 @@ class RaffleService {
   }
 
   /**
-   * PRIVATE UTILITY HELPER: Appends real-time metrics, localized formatting, 
-   * and backwards-compatible attributes onto raw database results.
-   * * @static
+   * Purchases a ticket using the new standalone endpoint.
+   * @param {string|number} raffleId - Raffle identifier
+   * @param {number} number - Ticket number
+   * @param {Object} buyerData - { userId, name?, phone? }
+   * @returns {Promise<Object>} Purchase confirmation
+   * @throws {Error} If authentication is missing
+   */
+  static async purchaseNumber(raffleId, number, buyerData) {
+    if (!buyerData?.userId) {
+      throw new Error("Authentication is required to purchase a ticket.");
+    }
+
+    // Use the new purchase endpoint
+    return await ticketApi.purchase({
+      raffleId: Number(raffleId),
+      number: Number(number),
+      userId: Number(buyerData.userId),
+      name: buyerData.name?.trim(),
+      phone: buyerData.phone?.replace(/\D/g, ""),
+    });
+  }
+
+  /**
+   * Private helper: Enriches raw raffle data with computed metrics.
+   * @param {Object} raffle - Raw raffle data
+   * @returns {Object} Enriched raffle object
    * @private
-   * @param {Object} raffle - Raw data model dictionary from backend data sources.
-   * @returns {Object} Enriched view-ready composite object tailored for UI components.
    */
   static _enrichRaffleData(raffle) {
     const totalTickets = raffle.totalTickets || 100;
     
-    // Filters and counts only tickets that have a buyer assigned (Prisma relation)
     const soldTickets = raffle.tickets 
       ? raffle.tickets.filter(ticket => ticket.userId !== null).length 
       : 0;
@@ -115,21 +112,16 @@ class RaffleService {
 
     return {
       ...raffle,
-      // Mapping database 'name' to UI 'title' to maintain backwards compatibility with legacy layout components
-      title: raffle.name, 
-
-      // Regional BRL currency formatter mask localization injection
+      title: raffle.name,
       formattedPrice: new Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL",
       }).format(price),
-      
-      // Analytical performance ratios computation for visual progress bars
       salesProgress: totalTickets > 0 ? Math.round((soldTickets / totalTickets) * 100) : 0,
       isSoldOut: soldTickets >= totalTickets,
-      
-      // Translates backend date objects or ISO strings safely to Brazilian localized labels
-      formattedDrawDate: drawDate ? new Date(drawDate).toLocaleDateString("pt-BR") : ""
+      formattedDrawDate: drawDate ? new Date(drawDate).toLocaleDateString("pt-BR") : "",
+      soldCount: soldTickets,
+      availableTickets: totalTickets - soldTickets
     };
   }
 }

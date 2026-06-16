@@ -1,43 +1,81 @@
 import { ticketApi } from "../api/ticket.api";
+import { userApi } from "../api/user.api";
 
 /**
- * Service Layer to manage formatting, sorting, and analytical metrics resolution for User Tickets.
- * Adjusted to handle reality boundaries where tickets do not hold a 'status' field in Prisma.
+ * Service Layer managing ticket operations.
+ * Handles formatting, enrichment, and API coordination.
+ * Updated to use new RESTful endpoints.
  */
 class TicketService {
   /**
-   * Fetches all purchases made by the current authenticated scope user.
-   * @returns {Promise<Array>} Cleanly formatted and ordered collection of tickets.
+   * Fetches all tickets purchased by the current user.
+   * Uses the new GET /api/users/me/tickets endpoint.
+   * @returns {Promise<Array>} Enriched ticket collection
    */
   static async getMyPurchasedTickets() {
-    const rawTickets = await ticketApi.getUserTickets();
+    const rawTickets = await userApi.getMyTickets();
     
-    // Sorts listings descending by chronological checkout parameters
     return rawTickets
       .map((ticket) => this._enrichTicketData(ticket))
       .sort((a, b) => new Date(b.purchasedAt || 0) - new Date(a.purchasedAt || 0));
   }
 
   /**
-   * PRIVATE HELPER: Extrapolates conditional variables dynamically from relational Prisma parameters.
-   * @param {Object} ticket - Raw relational Ticket layout model.
-   * @returns {Object} Business-ready UI compatible structural object.
+   * Fetches all tickets (Administrative use).
+   * @returns {Promise<Array>} Collection of all tickets
+   */
+  static async getAllTickets() {
+    const rawTickets = await ticketApi.getAll();
+    return rawTickets.map((ticket) => this._enrichTicketData(ticket));
+  }
+
+  /**
+   * Fetches a specific ticket by ID.
+   * @param {string|number} id - Ticket identifier
+   * @returns {Promise<Object>} Enriched ticket data
+   */
+  static async getTicketById(id) {
+    const ticket = await ticketApi.getById(id);
+    return this._enrichTicketData(ticket);
+  }
+
+  /**
+   * Updates a ticket.
+   * @param {string|number} id - Ticket identifier
+   * @param {Object} ticketData - Updated ticket data
+   * @returns {Promise<Object>} Updated ticket
+   */
+  static async updateTicket(id, ticketData) {
+    return await ticketApi.update(id, ticketData);
+  }
+
+  /**
+   * Deletes a ticket.
+   * @param {string|number} id - Ticket identifier
+   * @returns {Promise<Object>} Deletion confirmation
+   */
+  static async deleteTicket(id) {
+    return await ticketApi.delete(id);
+  }
+
+  /**
+   * Private helper: Enriches raw ticket data with computed status.
+   * @param {Object} ticket - Raw ticket data
+   * @returns {Object} Enriched ticket object
    * @private
    */
   static _enrichTicketData(ticket) {
-    // Evaluate purchase context dynamically based on relational schema properties
     const hasBeenPaid = ticket.userId !== null && ticket.purchasedAt !== null;
 
     return {
       ...ticket,
-      // Emulates status indicators on top of structural database values
       statusLabel: hasBeenPaid ? "Confirmado" : "Disponível / Aguardando",
       isPaid: hasBeenPaid,
-      
-      // Regional date mapping translation wrapper
       purchaseDate: ticket.purchasedAt 
         ? new Date(ticket.purchasedAt).toLocaleDateString("pt-BR")
-        : ""
+        : "",
+      // Extract raffle name for display if available
+      raffleName: ticket.raffle?.name || ticket.raffleName || "N/A"
     };
   }
 }

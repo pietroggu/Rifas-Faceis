@@ -1,8 +1,9 @@
 import httpClient from "./httpClient";
 
 /**
- * API layer for raffle and ticket slot operations.
+ * API layer for raffle operations.
  * Handles raw HTTP communication only.
+ * Updated to match new RESTful endpoints.
  */
 export const raffleApi = {
   /**
@@ -33,23 +34,6 @@ export const raffleApi = {
   },
 
   /**
-   * Purchase a specific ticket number.
-   * @param {string|number} raffleId
-   * @param {number} number
-   * @param {Object} buyerData - { name, phone }
-   * @returns {Promise<Object>} Purchase confirmation payload
-   */
-  buyNumber: async (raffleId, number, buyerData) => {
-    try {
-      // Aligned with the new standardized English route structure
-      const response = await httpClient.post(`/raffles/${raffleId}/numbers/${number}/buy`, buyerData);
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || "Transaction failed");
-    }
-  },
-
-  /**
    * Create a new raffle entry.
    * @param {Object} raffleData
    * @returns {Promise<Object>} Created raffle instance
@@ -60,6 +44,21 @@ export const raffleApi = {
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to create raffle");
+    }
+  },
+
+  /**
+   * Update an existing raffle.
+   * @param {string|number} raffleId
+   * @param {Object} raffleData
+   * @returns {Promise<Object>} Updated raffle instance
+   */
+  update: async (raffleId, raffleData) => {
+    try {
+      const response = await httpClient.put(`/raffles/${raffleId}`, raffleData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to update raffle");
     }
   },
 
