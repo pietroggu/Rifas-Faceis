@@ -25,7 +25,6 @@ function Raffle() {
                 // Unified request capturing full single raffle data structure parameters
                 const raffleData = await RaffleService.getRaffleById(id);
                 setRaffle(raffleData);
-                console.log(raffleData);
 
                 // Best Practice: Generate layout matrix dynamically based on single data payload property numbers
                 const totalTickets = raffleData.totalTickets || raffleData.total_bilhetes || 100;
@@ -87,12 +86,11 @@ function Raffle() {
 
     if (loading) return <p style={styles.stateText}>Carregando...</p>;
     if (!raffle) return <p style={styles.stateText}>Rifa não encontrada</p>;
-    
+
     return (
         <div style={styles.container}>
             <h1>{raffle.nome || raffle.name}</h1>
             <p>{raffle.descricao || raffle.description}</p>
-            <img src={raffle.imagem} alt={raffle.nome} />
             <p>Instituição responsável: {raffle.instituicao || raffle.institution}</p>
             <p>Categoria: {raffle.categoria || raffle.category}</p>
             <p>Valor por número: R$ {(raffle.valor_numero || raffle.ticketPrice || 0).toFixed(2)}</p>
