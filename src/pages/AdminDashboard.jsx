@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import RaffleCard from "../components/RaffleCard";
 import RaffleService from "../services/raffleService";
+import { getRaffleImageUrl } from "../utils/raffleImage";
 
 /**
  * AdminDashboard manages administrative actions such as creating new raffles
