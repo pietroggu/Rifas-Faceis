@@ -220,7 +220,7 @@ function Register() {
             // Redirect to login page on success
             navigate("/", {
                 state: {
-                    successMessage: "Conta criada com sucesso!",
+                    successMessage: "Conta criada com sucesso!  Faça login para continuar.",
                 },
             }); 
         } catch (error) {
