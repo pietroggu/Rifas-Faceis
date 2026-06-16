@@ -30,7 +30,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route path="/home" element={<Home />} />
-              <Route path="/raffle/:id" element={<RaffleDetails />} />
+              <Route path="/rifa/:id" element={<RaffleDetails />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/my-raffles" element={<MyRaffles />} />
