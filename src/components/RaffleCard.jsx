@@ -8,6 +8,7 @@ import "./RaffleCard.css";
 function RaffleCard({ 
   id, 
   nome,
+  imagem,
   descricao, 
   valor_numero, 
   categoria, 
@@ -36,6 +37,8 @@ function RaffleCard({
   return (
     <div onClick={handleClick} className="raffle-card">
       <h2 className="raffle-card-title">{nome}</h2>
+
+      {imagem && <img src={image_url} alt={nome} className="raffle-card-image" />}
       
       {categoria && <span className="raffle-card-tag">{categoria}</span>}
       

@@ -90,6 +90,13 @@ function Raffle() {
     return (
         <div style={styles.container}>
             <h1>{raffle.nome || raffle.name}</h1>
+            {(raffle.imagem || raffle.image) && (
+                <img 
+                    src={raffle.image_url} 
+                    alt={raffle.name} 
+                    style={{ maxWidth: "100%", maxHeight: "300px", borderRadius: "8px" }} 
+                />
+            )}
             <p>{raffle.descricao || raffle.description}</p>
             <p>Instituição responsável: {raffle.instituicao || raffle.institution}</p>
             <p>Categoria: {raffle.categoria || raffle.category}</p>
