@@ -64,10 +64,14 @@ export function AuthProvider({ children }) {
    * @param {string} email
    * @param {string} password
    */
-  const loginUser = async (email, password) => {
+  const loginUser = async (email, password, rememberMe) => {
     setLoading(true);
     try {
-      const data = await AuthService.login(email, password);
+      const data = await AuthService.login(
+        email,
+        password,
+        rememberMe
+      );
       setUser(data.user);
       setIsAuthenticated(true);
       return data;

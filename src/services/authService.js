@@ -49,7 +49,7 @@ class AuthService {
    * @param {string} password
    * @returns {Promise<Object>} Session payload containing token and user metadata
    */
-  static async login(email, password) {
+  static async login(email, password, rememberMe = true) {
     const data = await authApi.login({ email, password });
     const { token, user } = this.normalizeAuthPayload(data);
 
@@ -58,11 +58,18 @@ class AuthService {
     }
 
     if (user) {
-      this.saveAuth({ token, user });
+      this.saveAuth(
+        { token, user },
+        rememberMe
+      );
       return { token, user };
     }
 
-    localStorage.setItem("token", token);
+    const storage = rememberMe
+      ? localStorage
+      : sessionStorage;
+
+    storage.setItem("token", token);
     const profile = await this.syncProfile();
     return { token, user: profile };
   }
@@ -71,11 +78,28 @@ class AuthService {
    * Persist session state securely into localStorage mirrors.
    * @param {Object} authData - Contains { token, user }
    */
-  static saveAuth(authData) {
-    localStorage.setItem("token", authData.token);
+  static saveAuth(authData, rememberMe = true) {
+    const storage = rememberMe
+      ? localStorage
+      : sessionStorage;
+
+    storage.setItem("token", authData.token);
+
     if (authData.user) {
-      localStorage.setItem("user", JSON.stringify(authData.user));
+      storage.setItem(
+        "user",
+        JSON.stringify(authData.user)
+      );
     }
+  }
+
+
+  static getStorage() {
+    if (localStorage.getItem("token")) {
+      return localStorage;
+    }
+
+    return sessionStorage;
   }
 
   /**
@@ -84,6 +108,9 @@ class AuthService {
   static logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
   }
 
   /**
@@ -91,7 +118,10 @@ class AuthService {
    * @returns {boolean}
    */
   static isAuthenticated() {
-    return !!localStorage.getItem("token");
+    return !!(
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("token")
+    );
   }
 
   /**
@@ -99,7 +129,8 @@ class AuthService {
    * @returns {Object|null}
    */
   static getCurrentUser() {
-    const user = localStorage.getItem("user");
+    const storage = this.getStorage();
+    const user = storage.getItem("user");
     if (!user) return null;
 
     try {
@@ -122,7 +153,12 @@ class AuthService {
       throw new Error("Invalid profile response");
     }
 
-    localStorage.setItem("user", JSON.stringify(freshProfile));
+    const storage = this.getStorage();
+
+    storage.setItem(
+      "user",
+      JSON.stringify(freshProfile)
+    );
     return freshProfile;
   }
 }

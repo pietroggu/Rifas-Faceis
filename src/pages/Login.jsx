@@ -13,6 +13,7 @@ function Login() {
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({});
     const [generalError, setGeneralError] = useState("");
+    const [rememberMe, setRememberMe] = useState(false);
     
     // Deconstruct dynamic loading triggers and global context dispatcher state
     const { loginUser, loading, isAuthenticated } = useAuth();
@@ -60,7 +61,7 @@ function Login() {
 
         try {
             // Triggers context pipeline to execute login, sync state, and persist keys cleanly
-            await loginUser(email, password);
+            await loginUser(email, password, rememberMe);
             navigate("/home");
         } catch (error) {
             setGeneralError(error.message);
@@ -96,6 +97,19 @@ function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     error={errors.password}
                 />
+
+                <div style={styles.rememberContainer}>
+                    <input
+                        type="checkbox"
+                        id="rememberMe"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        style={styles.checkbox}
+                    />
+                    <label htmlFor="rememberMe" style={styles.rememberLabel}>
+                        Manter conectado
+                    </label>
+                </div>
 
                 <button type="submit" disabled={loading} style={styles.button}>
                     {loading ? "Entrando..." : "Entrar"}
@@ -169,7 +183,24 @@ const styles = {
         color: "#4facfe",
         cursor: "pointer",
         fontWeight: "bold"
-    }
+    },
+
+    rememberContainer: {
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        marginBottom: "15px",
+        fontSize: "14px"
+    },
+
+    checkbox: {
+        cursor: "pointer"
+    },
+
+    rememberLabel: {
+        cursor: "pointer",
+        color: "#333"
+    },
 };
 
 export default Login;
