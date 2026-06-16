@@ -69,8 +69,17 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(false);
   };
 
+  /**
+   * Synchronizes newly updated user data with the global application state and cache.
+   * @param {Object} updatedUser - The revised user dataset returned by the API
+   */
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, loading, loginUser, logoutUser }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, loginUser, logoutUser, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
