@@ -65,13 +65,13 @@ function AdminDashboard() {
     try {
       // Maps UI state keys directly to backend database structure fields
       const backendPayload = {
-        nome: title,
-        descricao: description,
-        valor_numero: Number(price),
-        categoria: category,
-        instituicao: institution,
-        quantidade_numeros: Number(totalNumbers),
-        data_sorteio: date,
+        title: title,
+        description: description,
+        ticketPrice: Number(price),
+        category: category,
+        institution: institution,
+        totalTickets: Number(totalNumbers),
+        drawDate: date,
       };
 
       await RaffleService.createRaffle(backendPayload);
