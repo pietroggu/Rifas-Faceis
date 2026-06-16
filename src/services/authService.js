@@ -1,8 +1,10 @@
 import { authApi } from "../api/auth.api";
+import { userApi } from "../api/user.api";
 import { withRetry } from "../api/retry";
 
 /**
  * Service Layer managing authentication state, persistence, and profile sync.
+ * Updated to use new user API endpoints.
  */
 class AuthService {
   /**
@@ -47,6 +49,7 @@ class AuthService {
    * Authenticate user credentials and persist session tokens locally.
    * @param {string} email
    * @param {string} password
+   * @param {boolean} rememberMe
    * @returns {Promise<Object>} Session payload containing token and user metadata
    */
   static async login(email, password, rememberMe = true) {
@@ -58,47 +61,39 @@ class AuthService {
     }
 
     if (user) {
-      this.saveAuth(
-        { token, user },
-        rememberMe
-      );
+      this.saveAuth({ token, user }, rememberMe);
       return { token, user };
     }
 
-    const storage = rememberMe
-      ? localStorage
-      : sessionStorage;
-
+    const storage = rememberMe ? localStorage : sessionStorage;
     storage.setItem("token", token);
     const profile = await this.syncProfile();
     return { token, user: profile };
   }
 
   /**
-   * Persist session state securely into localStorage mirrors.
+   * Persist session state securely into storage.
    * @param {Object} authData - Contains { token, user }
+   * @param {boolean} rememberMe
    */
   static saveAuth(authData, rememberMe = true) {
-    const storage = rememberMe
-      ? localStorage
-      : sessionStorage;
+    const storage = rememberMe ? localStorage : sessionStorage;
 
     storage.setItem("token", authData.token);
 
     if (authData.user) {
-      storage.setItem(
-        "user",
-        JSON.stringify(authData.user)
-      );
+      storage.setItem("user", JSON.stringify(authData.user));
     }
   }
 
-
+  /**
+   * Get the current storage mechanism (localStorage or sessionStorage).
+   * @returns {Storage} Storage object
+   */
   static getStorage() {
     if (localStorage.getItem("token")) {
       return localStorage;
     }
-
     return sessionStorage;
   }
 
@@ -108,20 +103,16 @@ class AuthService {
   static logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
   }
 
   /**
-   * Validate if an active session token exists in local storage.
+   * Validate if an active session token exists in storage.
    * @returns {boolean}
    */
   static isAuthenticated() {
-    return !!(
-      localStorage.getItem("token") ||
-      sessionStorage.getItem("token")
-    );
+    return !!(localStorage.getItem("token") || sessionStorage.getItem("token"));
   }
 
   /**
@@ -136,17 +127,18 @@ class AuthService {
     try {
       return JSON.parse(user);
     } catch {
-      localStorage.removeItem("user");
+      storage.removeItem("user");
       return null;
     }
   }
 
   /**
    * Fetch a fresh profile state from the server and synchronize local storage.
+   * Uses the new GET /api/users/me endpoint.
    * @returns {Promise<Object>} Updated user profile entity
    */
   static async syncProfile() {
-    const response = await withRetry(() => authApi.getProfile());
+    const response = await withRetry(() => userApi.getProfile());
     const freshProfile = this.normalizeUserPayload(response);
 
     if (!freshProfile) {
@@ -154,11 +146,7 @@ class AuthService {
     }
 
     const storage = this.getStorage();
-
-    storage.setItem(
-      "user",
-      JSON.stringify(freshProfile)
-    );
+    storage.setItem("user", JSON.stringify(freshProfile));
     return freshProfile;
   }
 }
