@@ -1,21 +1,5 @@
 import httpClient from "./httpClient";
 
-function unwrapRaffleList(data) {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.raffles)) return data.raffles;
-  if (Array.isArray(data?.data)) return data.data;
-  return [];
-}
-
-function unwrapRaffle(data) {
-  if (!data || typeof data !== "object") return data;
-  if (data.raffle && typeof data.raffle === "object") return data.raffle;
-  if (data.data && typeof data.data === "object" && !Array.isArray(data.data)) {
-    return data.data;
-  }
-  return data;
-}
-
 /**
  * API layer for raffle and ticket slot operations.
  * Handles raw HTTP communication only.
@@ -28,7 +12,7 @@ export const raffleApi = {
   getAllRaffles: async () => {
     try {
       const response = await httpClient.get("/raffles");
-      return unwrapRaffleList(response.data);
+      return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to fetch raffles");
     }
@@ -42,7 +26,7 @@ export const raffleApi = {
   getById: async (raffleId) => {
     try {
       const response = await httpClient.get(`/raffles/${raffleId}`);
-      return unwrapRaffle(response.data);
+      return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to fetch raffle");
     }
@@ -57,7 +41,8 @@ export const raffleApi = {
    */
   buyNumber: async (raffleId, number, buyerData) => {
     try {
-      const response = await httpClient.post(`/raffles/${raffleId}/numeros/${number}/comprar`, buyerData);
+      // Aligned with the new standardized English route structure
+      const response = await httpClient.post(`/raffles/${raffleId}/numbers/${number}/buy`, buyerData);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || "Transaction failed");
@@ -72,7 +57,7 @@ export const raffleApi = {
   create: async (raffleData) => {
     try {
       const response = await httpClient.post("/raffles", raffleData);
-      return unwrapRaffle(response.data);
+      return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to create raffle");
     }
@@ -90,5 +75,5 @@ export const raffleApi = {
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to delete raffle");
     }
-  },
+  }
 };

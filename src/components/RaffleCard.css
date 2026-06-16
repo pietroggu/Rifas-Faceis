@@ -1,7 +1,7 @@
+/* Container card wrapper styling constraints */
 .raffle-card {
   width: 100%;
   max-width: 320px;
-  padding: 24px;
   border-radius: 12px;
   background: #ffffff;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
@@ -10,76 +10,165 @@
   border: 2px solid #e2e8f0;
   text-align: left;
   box-sizing: border-box;
+  overflow: hidden; /* Ensures inner media scales gracefully within rounded corners */
+  display: flex;
+  flex-direction: column;
 }
 
+/* Hover elevation and highlight interaction effects */
 .raffle-card:hover {
   border-color: #2563eb;
   transform: translateY(-4px);
   box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1);
 }
 
-.raffle-card-title {
-  font-size: 1.25rem;
-  color: #0f172a;
-  margin: 0 0 8px 0;
+/* Sold-out visual status modifier variant */
+.raffle-card.sold-out {
+  border-color: #cbd5e1;
+  opacity: 0.85;
 }
 
+/* Top cover section responsive background grid */
+.raffle-card-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  background-color: #f1f5f9;
+}
+
+/* Core card element cover image fit configuration */
+.raffle-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Sold Out absolute notification badge overlay overlay */
+.raffle-sold-out-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  letter-spacing: 0.5px;
+}
+
+/* Text structure content bounding wrapper padding rules */
+.raffle-card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+/* Primary identifier context title */
+.raffle-card-title {
+  font-size: 1.2rem;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+  font-weight: 700;
+}
+
+/* Rounded category context reference badges */
 .raffle-card-tag {
+  align-self: flex-start;
   display: inline-block;
   background-color: #eff6ff;
   color: #2563eb;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 4px 8px;
+  padding: 2px 8px;
   border-radius: 9999px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
-.raffle-card-description {
+/* Core reward indicator label */
+.raffle-card-prize {
   font-size: 0.9rem;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+/* Description paragraph multi-line clamping and dynamic ellipse clip logic */
+.raffle-card-description {
+  font-size: 0.85rem;
   color: #475569;
   margin: 0 0 12px 0;
-  line-height: 1.5;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Automatically clips text body into exactly two rows max */
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.raffle-card-info {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin: 0 0 12px 0;
-}
-
-.raffle-card-image {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-  border-radius: 8px;
+/* Sales execution tracking container styles */
+.raffle-card-progress-section {
   margin-bottom: 12px;
-  display: block;
 }
 
+/* Realtime progress placeholder bar background slot track */
+.raffle-card-progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+/* Dynamic loaded indicator progress filler line */
+.raffle-card-progress-bar {
+  height: 100%;
+  background-color: #10b981;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Status percentage indicator subtitles details text */
+.raffle-card-progress-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Absolute metrics alignment footer wrapper */
 .raffle-card-footer {
   border-top: 1px solid #f1f5f9;
-  padding-top: 12px;
-  margin-top: 12px;
+  padding-top: 10px;
+  margin-top: auto; /* Vertically forces the footer bar block container attachment down */
   display: flex;
   justify-content: space-between;
-  font-size: 0.9rem;
+  align-items: center;
 }
 
+/* Ticket value layout rules */
 .raffle-card-price {
   margin: 0;
   font-weight: 700;
   color: #0f172a;
+  font-size: 0.95rem;
 }
 
+/* Remaining inventory details text metrics counter styling layout */
 .raffle-card-tickets {
   margin: 0;
   color: #64748b;
+  font-size: 0.85rem;
 }
 
+/* Target resolution drawing execution datetime reference label styling */
 .raffle-card-date {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #2563eb;
-  margin: 12px 0 0 0;
-  font-weight: 500;
+  margin: 8px 0 0 0;
+  font-weight: 600;
+  border-top: 1px dashed #e2e8f0;
+  padding-top: 8px;
 }

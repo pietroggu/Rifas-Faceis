@@ -1,40 +1,43 @@
 import { ticketApi } from "../api/ticket.api";
 
 /**
- * Service Layer to manage formatting, filtering, and computed states for user tickets.
+ * Service Layer to manage formatting, sorting, and analytical metrics resolution for User Tickets.
+ * Adjusted to handle reality boundaries where tickets do not hold a 'status' field in Prisma.
  */
 class TicketService {
   /**
-   * Fetch processed user purchases mapped with business presentation properties.
-   * @returns {Promise<Array>} Cleanly formatted collection of tickets
+   * Fetches all purchases made by the current authenticated scope user.
+   * @returns {Promise<Array>} Cleanly formatted and ordered collection of tickets.
    */
   static async getMyPurchasedTickets() {
     const rawTickets = await ticketApi.getUserTickets();
     
-    // Sort by recent purchase order and map human-readable presentation parameters
+    // Sorts listings descending by chronological checkout parameters
     return rawTickets
       .map((ticket) => this._enrichTicketData(ticket))
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      .sort((a, b) => new Date(b.purchasedAt || 0) - new Date(a.purchasedAt || 0));
   }
 
   /**
-   * PRIVATE HELPER: Normalizes states, dates, and localized variables for tickets.
-   * @param {Object} ticket
-   * @returns {Object} Presentation-ready ticket schema
+   * PRIVATE HELPER: Extrapolates conditional variables dynamically from relational Prisma parameters.
+   * @param {Object} ticket - Raw relational Ticket layout model.
+   * @returns {Object} Business-ready UI compatible structural object.
+   * @private
    */
   static _enrichTicketData(ticket) {
+    // Evaluate purchase context dynamically based on relational schema properties
+    const hasBeenPaid = ticket.userId !== null && ticket.purchasedAt !== null;
+
     return {
       ...ticket,
-      // Human-friendly status translation for UI Badges (e.g., PENDING -> "Aguardando")
-      statusLabel: ticket.status === "PAID" ? "Confirmado" : "Aguardando Pagamento",
+      // Emulates status indicators on top of structural database values
+      statusLabel: hasBeenPaid ? "Confirmado" : "Disponível / Aguardando",
+      isPaid: hasBeenPaid,
       
-      // Compute conditional styles markers directly on data layers
-      isPaid: ticket.status === "PAID",
-      
-      // Standardized purchase date format mapping
-      purchaseDate: ticket.createdAt 
-        ? new Date(ticket.createdAt).toLocaleDateString("pt-BR") 
-        : "N/A"
+      // Regional date mapping translation wrapper
+      purchaseDate: ticket.purchasedAt 
+        ? new Date(ticket.purchasedAt).toLocaleDateString("pt-BR")
+        : ""
     };
   }
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 /**
  * PurchaseModal shows a focus context display capturing user metadata fields to buy a raffle slot.
+ * Enforces active session validation before dispatching events.
  */
 function PurchaseModal({ open, number, price, onClose, onConfirm, user }) {
   const [name, setName] = useState("");
@@ -28,10 +29,17 @@ function PurchaseModal({ open, number, price, onClose, onConfirm, user }) {
       return;
     }
 
+    // Active session verification gate
+    if (!user || !user.id) {
+      alert("Erro: Você precisa estar logado na sua conta para comprar um número.");
+      return;
+    }
+
     onConfirm({
       number,
       name,
       phone,
+      userId: user.id, // Appends the active session ID to the payload
     });
 
     // Reset input fields states cleanly for processing upcoming transactions

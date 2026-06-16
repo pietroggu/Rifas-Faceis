@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import RaffleCard from "../components/RaffleCard";
-import RaffleService from "../services/raffleService";
-import { getRaffleImageUrl } from "../utils/raffleImage";
+import RaffleService from "../services/raffleService"; // Replaced raw API with the business service layer
 
 /**
- * Main dashboard page that displays and filters all available raffles.
+ * Main marketplace/home page that displays, searches, and filters all available enriched raffles.
  */
 function Home() {
   const [raffles, setRaffles] = useState([]);
@@ -15,10 +14,13 @@ function Home() {
   const [sortBy, setSortBy] = useState("padrao");
 
   useEffect(() => {
+    /**
+     * Fetches enriched raffle items via the service layer to populate computed UI properties.
+     */
     async function fetchRaffles() {
       try {
+        // Calling RaffleService instead of raw api handles automatic formatting and metrics injection
         const data = await RaffleService.getAllRaffles();
-        // Fallback check to avoid structural mapping runtime crashes
         setRaffles(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(err.message);
@@ -30,20 +32,19 @@ function Home() {
     fetchRaffles();
   }, []);
 
-  // Dynamically maps unique available categories based on Prisma Model English key
+  // Dynamically maps unique available categories based on active records
   const categories = [
     "todas",
     ...new Set(raffles.map((r) => r.category).filter(Boolean)),
   ];
 
   /**
-   * In-memory filtering and sorting engine computed on state mutations.
+   * In-memory filtering and sorting computation driven by local reactive states.
    */
   const filteredRaffles = raffles
     .filter((raffle) => {
       const searchTerm = search.toLowerCase();
       
-      // Aligned fields with your exact Prisma Model structure
       const raffleName = (raffle.name || "").toLowerCase();
       const raffleDescription = (raffle.description || "").toLowerCase();
       const raffleCategory = raffle.category || "";
@@ -52,11 +53,9 @@ function Home() {
       const descriptionMatch = raffleDescription.includes(searchTerm);
       const categoryMatch = category === "todas" || raffleCategory === category;
 
-      // Allows search matches targeting either the raffle name or its description context
       return (nameMatch || descriptionMatch) && categoryMatch;
     })
     .sort((a, b) => {
-      // Numerical sorting references mapped to your schema 'ticketPrice' property
       const priceA = a.ticketPrice || 0;
       const priceB = b.ticketPrice || 0;
       const nameA = a.name || "";
@@ -76,6 +75,7 @@ function Home() {
     <div style={styles.container}>
       <h1 style={styles.center}>🎯 Rifas Disponíveis</h1>
 
+      {/* Control Filters panel UI element wrapper */}
       <div style={styles.controls}>
         <input
           type="text"
@@ -115,21 +115,24 @@ function Home() {
       ) : filteredRaffles.length === 0 ? (
         <p style={styles.center}>Nenhuma rifa encontrada para essa pesquisa.</p>
       ) : (
+        /* Render Grid mapping directly to the new structured camelCase component attributes */
         <div style={styles.grid}>
           {filteredRaffles.map((raffle) => (
             <div style={styles.cardWrapper} key={raffle.id}>
-              {/* Maps backend properties dynamically into your component parameters */}
               <RaffleCard
                 id={raffle.id}
-                raffle={raffle}
-                nome={raffle.name || raffle.title || raffle.nome}
-                imageUrl={getRaffleImageUrl(raffle)}
-                descricao={raffle.description || raffle.descricao}
-                valor_numero={raffle.ticketPrice ?? raffle.valor_numero}
-                categoria={raffle.category || raffle.categoria}
-                instituicao={raffle.institution || raffle.instituicao || raffle.prize}
-                quantidade_numeros={raffle.totalTickets ?? raffle.quantidade_numeros}
-                data_sorteio={raffle.drawDate || raffle.data_sorteio}
+                name={raffle.name}
+                description={raffle.description}
+                prize={raffle.prize}
+                category={raffle.category}
+                ticketPrice={raffle.ticketPrice}
+                totalTickets={raffle.totalTickets}
+                drawDate={raffle.drawDate}
+                imageUrl={raffle.imageUrl}
+                formattedPrice={raffle.formattedPrice}
+                salesProgress={raffle.salesProgress}
+                isSoldOut={raffle.isSoldOut}
+                formattedDrawDate={raffle.formattedDrawDate}
               />
             </div>
           ))}
@@ -140,14 +143,14 @@ function Home() {
 }
 
 const styles = {
-  container: { padding: "20px", textAlign: "center" },
-  center: { textAlign: "center", padding: "10px", margin: "5px" },
-  errorText: { textAlign: "center", color: "red", marginTop: "20px" },
+  container: { padding: "20px", textAlign: "center", backgroundColor: "#f8fafc", minHeight: "100vh" },
+  center: { textAlign: "center", padding: "10px", margin: "5px", color: "#0f172a" },
+  errorText: { textAlign: "center", color: "#ef4444", marginTop: "20px", fontWeight: "bold" },
   cardWrapper: { flex: "1 1 280px", maxWidth: "320px", width: "100%" },
   grid: { display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", marginTop: "20px" },
   controls: { display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", marginTop: "20px", marginBottom: "10px" },
-  searchInput: { padding: "10px 14px", borderRadius: "8px", border: "1px solid #ccc", fontSize: "14px", minWidth: "280px", outline: "none" },
-  select: { padding: "10px 14px", borderRadius: "8px", border: "1px solid #ccc", fontSize: "14px", cursor: "pointer", backgroundColor: "#fff", outline: "none" },
+  searchInput: { padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "14px", minWidth: "280px", outline: "none", color: "#334155" },
+  select: { padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "14px", cursor: "pointer", backgroundColor: "#fff", outline: "none", color: "#334155" },
 };
 
 export default Home;
