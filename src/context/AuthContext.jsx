@@ -21,22 +21,38 @@ export function AuthProvider({ children }) {
       const hasToken = AuthService.isAuthenticated();
       const localUser = AuthService.getCurrentUser();
 
-      if (hasToken && localUser) {
-        // Hydrate UI state immediately with cached data for fast layout rendering
+      if (!hasToken) {
+        setLoading(false);
+        return;
+      }
+
+      // Restore session immediately from cache so refresh does not flash "logged out"
+      if (localUser) {
         setUser(localUser);
         setIsAuthenticated(true);
+      }
 
-        try {
-          // Synchronize profile data through the service layer to protect boundaries
-          const freshProfile = await AuthService.syncProfile();
-          setUser(freshProfile);
-        } catch (error) {
-          console.error("Session sync failed, forcing local session purge:", error);
+      try {
+        const freshProfile = await AuthService.syncProfile();
+        setUser(freshProfile);
+        setIsAuthenticated(true);
+      } catch (error) {
+        if (AuthService.isAuthError(error)) {
+          console.error("Session expired or invalid, clearing local session:", error);
+          AuthService.logout();
+          setUser(null);
+          setIsAuthenticated(false);
+        } else if (localUser) {
+          // Network/cold-start errors: keep cached session instead of logging out
+          console.warn("Profile sync failed, keeping cached session:", error.message);
+        } else {
+          console.error("Could not restore session without cached user:", error);
           AuthService.logout();
           setUser(null);
           setIsAuthenticated(false);
         }
       }
+
       setLoading(false);
     }
 

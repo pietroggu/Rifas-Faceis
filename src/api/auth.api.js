@@ -1,5 +1,13 @@
 import httpClient from "./httpClient";
 
+function toApiError(error, fallbackMessage) {
+  const wrapped = new Error(
+    error.response?.data?.error || error.response?.data?.message || fallbackMessage
+  );
+  wrapped.response = error.response;
+  return wrapped;
+}
+
 /**
  * API layer for authentication endpoints.
  * Handles raw HTTP communication only.
@@ -15,7 +23,7 @@ export const authApi = {
       const response = await httpClient.post("/auth/login", credentials);
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.error || "Authentication failed");
+      throw toApiError(error, "Authentication failed");
     }
   },
 
@@ -28,7 +36,7 @@ export const authApi = {
       const response = await httpClient.get("/auth/me");
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.error || "Failed to fetch profile");
+      throw toApiError(error, "Failed to fetch profile");
     }
   },
 };

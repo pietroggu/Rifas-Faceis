@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import Input from "../components/Input";
-import { useAuth } from "../context/AuthContext"; // Integrated the global unified auth context engine
+import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
 
 /**
@@ -15,8 +15,12 @@ function Login() {
     const [generalError, setGeneralError] = useState("");
     
     // Deconstruct dynamic loading triggers and global context dispatcher state
-    const { loginUser, loading } = useAuth();
+    const { loginUser, loading, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+
+    if (!loading && isAuthenticated) {
+        return <Navigate to="/home" replace />;
+    }
 
     /**
      * Client-side validation processor inspecting constraints layout compliance.

@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext"; // Imported global authentication engine
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/layout/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -25,13 +26,15 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           {/* Protected core business layout routes shell */}
-          <Route element={<Layout />}>
-            <Route path="/home" element={<Home />} />
-            <Route path="/adminDashboard" element={<AdminDashboard />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/myRaffles" element={<MyRaffles />} />
-            <Route path="/rifa/:id" element={<Raffle />} />
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route path="/home" element={<Home />} />
+              <Route path="/adminDashboard" element={<AdminDashboard />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/myRaffles" element={<MyRaffles />} />
+              <Route path="/rifa/:id" element={<Raffle />} />
+            </Route>
           </Route>
         </Routes>
       </AuthProvider>

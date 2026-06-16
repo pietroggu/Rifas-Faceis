@@ -37,6 +37,7 @@ httpClient.interceptors.response.use(
     // If the backend says the token expired or is invalid, wipe it locally
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
     }
     return Promise.reject(error);
   }
