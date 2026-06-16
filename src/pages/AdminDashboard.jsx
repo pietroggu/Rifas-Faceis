@@ -88,7 +88,7 @@ function AdminDashboard() {
         category: "",
       });
       setShowForm(false);
-      loadRaffles();
+      await loadRaffles();
     } catch (error) {
       alert(error.message || "Erro ao criar rifa.");
     }
@@ -185,13 +185,13 @@ function AdminDashboard() {
               <div key={raffle.id} style={styles.cardWrapper}>
                 <RaffleCard
                   id={raffle.id}
-                  nome={raffle.nome}
-                  descricao={raffle.descricao}
-                  valor_numero={raffle.valor_numero}
-                  categoria={raffle.categoria}
-                  instituicao={raffle.instituicao}
-                  quantidade_numeros={raffle.quantidade_numeros}
-                  data_sorteio={raffle.data_sorteio}
+                  nome={raffle.title}
+                  descricao={raffle.description}
+                  valor_numero={raffle.ticketPrice}
+                  categoria={raffle.category}
+                  instituicao={raffle.institution}
+                  quantidade_numeros={raffle.totalTickets}
+                  data_sorteio={raffle.drawDate}
                 />
               </div>
             ))}
