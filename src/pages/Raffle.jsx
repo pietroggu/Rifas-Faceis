@@ -91,7 +91,7 @@ function Raffle() {
         <div style={styles.container}>
             <h1>{raffle.nome || raffle.name}</h1>
             <p>{raffle.descricao || raffle.description}</p>
-            
+            <img src={raffle.imagem} alt={raffle.nome} />
             <p>Instituição responsável: {raffle.instituicao || raffle.institution}</p>
             <p>Categoria: {raffle.categoria || raffle.category}</p>
             <p>Valor por número: R$ {(raffle.valor_numero || raffle.ticketPrice || 0).toFixed(2)}</p>

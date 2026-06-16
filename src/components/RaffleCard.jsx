@@ -7,7 +7,8 @@ import "./RaffleCard.css";
  */
 function RaffleCard({ 
   id, 
-  nome, 
+  nome,
+  imagem, 
   descricao, 
   valor_numero, 
   categoria, 
