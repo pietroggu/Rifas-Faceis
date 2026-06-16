@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
 import Input from "../components/Input";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
+import { useNavigate, Navigate, Link } from "react-router-dom";
 
 /**
  * Authentication login interface screen.
@@ -13,14 +13,51 @@ function Login() {
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({});
     const [generalError, setGeneralError] = useState("");
-    const [rememberMe, setRememberMe] = useState(false);
-    
+    const [rememberMe, setRememberMe] = useState(true);
+    const [isButtonHovered, setIsButtonHovered] = useState(false);
+    const [isLinkHovered, setIsLinkHovered] = useState(false);
+
     // Deconstruct dynamic loading triggers and global context dispatcher state
     const { loginUser, loading, isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
+    const buttonStyle = {
+        ...styles.button,
+        background: isButtonHovered ? "#1D4ED8" : "#2563EB",
+        cursor: loading ? "not-allowed" : "pointer",
+        opacity: loading ? 0.8 : 1,
+    };
+
+    const registerLinkStyle = {
+        ...styles.registerLink,
+        textDecoration: isLinkHovered ? "underline" : "none",
+    };
+    
+
     if (!loading && isAuthenticated) {
         return <Navigate to="/home" replace />;
+    }
+
+    function handleEmailChange(e) {
+        setEmail(e.target.value);
+
+        if (errors.email) {
+            setErrors((prev) => ({
+                ...prev,
+                email: undefined,
+            }));
+        }
+    }
+
+    function handlePasswordChange(e) {
+        setPassword(e.target.value);
+
+        if (errors.password) {
+            setErrors((prev) => ({
+                ...prev,
+                password: undefined,
+            }));
+        }
     }
 
     /**
@@ -85,8 +122,9 @@ function Login() {
                 <Input
                     label="Email"
                     type="email"
+                    autoFocus
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={handleEmailChange}
                     error={errors.email}
                 />
 
@@ -94,7 +132,7 @@ function Login() {
                     label="Senha"
                     type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={handlePasswordChange}
                     error={errors.password}
                 />
 
@@ -111,18 +149,26 @@ function Login() {
                     </label>
                 </div>
 
-                <button type="submit" disabled={loading} style={styles.button}>
+                <button
+                    type="submit"
+                    disabled={loading}
+                    onMouseEnter={() => setIsButtonHovered(true)}
+                    onMouseLeave={() => setIsButtonHovered(false)}
+                    style={buttonStyle}
+                >
                     {loading ? "Entrando..." : "Entrar"}
                 </button>
                 
                 <div style={styles.registerContainer}>
                     <span>Não tem conta? </span>
-                    <span 
-                        style={styles.registerLink}
-                        onClick={() => navigate("/register")}
+                    <Link
+                        to="/register"
+                        onMouseEnter={() => setIsLinkHovered(true)}
+                        onMouseLeave={() => setIsLinkHovered(false)}
+                        style={registerLinkStyle}
                     >
                         Registrar
-                    </span>
+                    </Link>
                 </div>
             </form>
         </div>
@@ -132,7 +178,7 @@ function Login() {
 const styles = {
     container: {
         width: "100%",
-        height: "100vh",
+        minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -150,10 +196,9 @@ const styles = {
         marginBottom: "20px"
     },
     logo: {
-        width: "200px",
+        width: "160px",
         height: "auto",
-        objectFit: "contain",
-        margin: "0px"
+        objectFit: "contain"
     },
     errorBox: {
         background: "#ffe6e6",
@@ -172,7 +217,7 @@ const styles = {
         borderRadius: "6px",
         cursor: "pointer",
         fontWeight: "bold",
-        transition: "0.2s"
+        transition: "all 0.2s ease",
     },
     registerContainer: {
         marginTop: "15px",
@@ -180,9 +225,10 @@ const styles = {
         fontSize: "14px"
     },
     registerLink: {
-        color: "#4facfe",
+        color: "#2563EB",
         cursor: "pointer",
-        fontWeight: "bold"
+        fontWeight: "bold",
+        textDecoration: "none",
     },
 
     rememberContainer: {
@@ -194,7 +240,9 @@ const styles = {
     },
 
     checkbox: {
-        cursor: "pointer"
+        cursor: "pointer",
+        width: "16px",
+        height: "16px",
     },
 
     rememberLabel: {
