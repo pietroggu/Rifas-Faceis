@@ -14,7 +14,7 @@ function MyRaffles() {
   useEffect(() => {
     async function fetchUserTickets() {
       try {
-        const data = await ticketApi.getMyTickets();
+        const data = await ticketApi.getMyPurchasedTickets();
         // Fallback guarantee to avoid structural map crashes over undefined objects
         setMyRaffles(Array.isArray(data) ? data : []);
       } catch (err) {
