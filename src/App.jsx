@@ -6,7 +6,7 @@ import Layout from "./components/layout/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
-import Raffle from "./pages/Raffle";
+import RaffleDetails from "./pages/RaffleDetails";
 import AdminDashboard from "./pages/AdminDashboard";
 import Profile from "./pages/Profile";
 import FAQ from "./pages/FAQ";
@@ -33,7 +33,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/myRaffles" element={<MyRaffles />} />
-              <Route path="/rifa/:id" element={<Raffle />} />
+              <Route path="/rifa/:id" element={<RaffleDetails />} />
             </Route>
           </Route>
         </Routes>

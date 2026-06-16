@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import NumberCard from "../components/NumberCard";
@@ -6,76 +6,78 @@ import PurchaseModal from "../components/PurchaseModal";
 import RaffleService from "../services/raffleService";
 
 /**
- * Raffle component renders the deep-dive interactive view for a single raffle instance.
- * Maps out the reactive ticket allocation grid matrix directly linked to Prisma schema dimensions.
+ * RaffleDetails Component
+ * Renders the detailed view of a single raffle, including its information,
+ * image, and an interactive grid for ticket selection and purchasing.
  */
-function Raffle() {
+export default function RaffleDetails() {
   const { id } = useParams();
   const { user } = useAuth();
 
+  // State Management
   const [raffle, setRaffle] = useState(null);
   const [numbers, setNumbers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedNumber, setSelectedNumber] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  /**
+   * Fetches the raffle data and builds the interactive ticket grid.
+   */
   useEffect(() => {
-    /**
-     * Resolves single raffle record datasets and initializes the virtual interactive ticket grid.
-     */
-    async function fetchData() {
+    async function fetchRaffleData() {
       try {
         setLoading(true);
+        setError(null);
+        
         const raffleData = await RaffleService.getRaffleById(id);
         setRaffle(raffleData);
 
         const totalTickets = raffleData.totalTickets || 100;
         const soldTickets = raffleData.tickets || [];
 
-        // Generates an immutable tracking array representing every individual indexable slot
+        // Generate the ticket grid grid matrix based on total capacity
         const generatedGrid = Array.from({ length: totalTickets }, (_, index) => {
           const currentNumber = index + 1;
-          
-          // A ticket is occupied if its sequence number matches an item in the related tickets list
           const isSold = soldTickets.some((ticket) => ticket.number === currentNumber);
 
           return {
             id: currentNumber,
             number: currentNumber,
-            isSold: isSold,
+            isSold,
           };
         });
 
         setNumbers(generatedGrid);
-      } catch (error) {
-        console.error("Error building structural raffle matrix view:", error);
-        alert("Erro ao carregar os detalhes da rifa.");
+      } catch (err) {
+        console.error("Error fetching raffle details:", err);
+        setError("Failed to load raffle details. Please try again later.");
       } finally {
         setLoading(false);
       }
     }
 
     if (id) {
-      fetchData();
+      fetchRaffleData();
     }
   }, [id]);
 
   /**
-   * Selection event coordinator managing booking targets.
-   * @param {number} number - The clicked ticket sequence index identifier.
+   * Opens the purchase modal for the selected ticket number.
+   * @param {number} number - The chosen ticket number.
    */
-  function handleNumberClick(number) {
+  const handleNumberClick = useCallback((number) => {
     setSelectedNumber(number);
     setModalOpen(true);
-  }
+  }, []);
 
   /**
-   * Dispatches validation parameters to backend layers and reflects local operational status instantly.
-   * @param {Object} data - Form variables payload forwarded via modal layers.
+   * Handles the ticket purchase confirmation and updates the local state UI.
+   * @param {Object} data - Purchase details from the modal form.
    */
   async function handleConfirmPurchase(data) {
     try {
-      // Binds the active session ID to the outbound transaction request
       await RaffleService.purchaseNumber(id, data.number, {
         name: data.name,
         phone: data.phone,
@@ -85,32 +87,43 @@ function Raffle() {
       alert(`Compra realizada com sucesso!\nNúmero: ${data.number}`);
       setModalOpen(false);
 
-      // Instantaneous local UI mutation to preserve bandwidth and skip roundtrip loading lags
-      setNumbers((prev) =>
-        prev.map((n) => (n.number === data.number ? { ...n, isSold: true } : n))
+      // Optimistic local state update to avoid an extra API roundtrip
+      setNumbers((prevNumbers) =>
+        prevNumbers.map((n) => (n.number === data.number ? { ...n, isSold: true } : n))
       );
     } catch (err) {
       alert(err.message || "Erro ao registrar compra. Tente novamente.");
     }
   }
 
+  // Render State Blocks (Loading / Error)
   if (loading) return <p style={styles.stateText}>Carregando detalhes da rifa...</p>;
+  if (error) return <p style={{ ...styles.stateText, color: "#ef4444" }}>{error}</p>;
   if (!raffle) return <p style={styles.stateText}>Rifa não encontrada.</p>;
 
   return (
-    <div style={styles.container}>
-      <h1>{raffle.name}</h1>
-      {raffle.description && <p>{raffle.description}</p>}
+    <main style={styles.container}>
+      <header>
+        <h1>{raffle.name}</h1>
+        {raffle.description && <p style={styles.description}>{raffle.description}</p>}
+      </header>
 
-      <div style={styles.metaDetails}>
+      {/* FIXED: Added image rendering support */}
+      {raffle.imageUrl && (
+        <div style={styles.imageWrapper}>
+          <img src={raffle.imageUrl} alt={raffle.name} style={styles.image} />
+        </div>
+      )}
+
+      <section style={styles.metaDetails}>
         <p>🏆 Prêmio: <strong>{raffle.prize}</strong></p>
         {raffle.category && <p>📁 Categoria: {raffle.category}</p>}
         <p>💰 Valor por número: <strong>{raffle.formattedPrice}</strong></p>
         <p>📅 Data do Sorteio: {raffle.formattedDrawDate}</p>
-      </div>
+      </section>
 
       {/* Ticket Grid Execution Block */}
-      <div style={styles.grid}>
+      <section style={styles.grid} aria-label="Ticket Selection Grid">
         {numbers.map((num) => (
           <NumberCard
             key={num.id}
@@ -119,7 +132,7 @@ function Raffle() {
             onClick={handleNumberClick}
           />
         ))}
-      </div>
+      </section>
 
       <PurchaseModal
         open={modalOpen}
@@ -129,15 +142,16 @@ function Raffle() {
         onConfirm={handleConfirmPurchase}
         user={user}
       />
-    </div>
+    </main>
   );
 }
 
 const styles = {
   container: { padding: "40px 20px", textAlign: "center", backgroundColor: "#f8fafc", minHeight: "100vh" },
+  description: { color: "#475569", fontSize: "1.1rem", margin: "10px 0 20px" },
+  imageWrapper: { margin: "20px auto", maxWidth: "500px", borderRadius: "8px", overflow: "hidden", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" },
+  image: { width: "100%", height: "auto", display: "block", objectFit: "cover", maxHeight: "300px" },
   metaDetails: { margin: "20px auto", maxWidth: "500px", padding: "15px", background: "#fff", borderRadius: "8px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", textAlign: "left" },
   stateText: { textAlign: "center", padding: "40px", fontSize: "1.1rem", color: "#64748b" },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, 50px)", gap: "10px", justifyContent: "center", marginTop: "30px" },
 };
-
-export default Raffle;
