@@ -1,5 +1,21 @@
 import httpClient from "./httpClient";
 
+function unwrapRaffleList(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.raffles)) return data.raffles;
+  if (Array.isArray(data?.data)) return data.data;
+  return [];
+}
+
+function unwrapRaffle(data) {
+  if (!data || typeof data !== "object") return data;
+  if (data.raffle && typeof data.raffle === "object") return data.raffle;
+  if (data.data && typeof data.data === "object" && !Array.isArray(data.data)) {
+    return data.data;
+  }
+  return data;
+}
+
 /**
  * API layer for raffle and ticket slot operations.
  * Handles raw HTTP communication only.
@@ -12,7 +28,7 @@ export const raffleApi = {
   getAllRaffles: async () => {
     try {
       const response = await httpClient.get("/raffles");
-      return response.data;
+      return unwrapRaffleList(response.data);
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to fetch raffles");
     }
@@ -26,7 +42,7 @@ export const raffleApi = {
   getById: async (raffleId) => {
     try {
       const response = await httpClient.get(`/raffles/${raffleId}`);
-      return response.data;
+      return unwrapRaffle(response.data);
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to fetch raffle");
     }
@@ -56,7 +72,7 @@ export const raffleApi = {
   create: async (raffleData) => {
     try {
       const response = await httpClient.post("/raffles", raffleData);
-      return response.data;
+      return unwrapRaffle(response.data);
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to create raffle");
     }

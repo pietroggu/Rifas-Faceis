@@ -1,5 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import RaffleImage from "./RaffleImage";
+import { getRaffleImageUrl } from "../utils/raffleImage";
 import "./RaffleCard.css";
 
 /**
@@ -9,6 +11,8 @@ function RaffleCard({
   id, 
   nome,
   imagem,
+  imageUrl,
+  raffle,
   descricao, 
   valor_numero, 
   categoria, 
@@ -17,6 +21,7 @@ function RaffleCard({
   data_sorteio 
 }) {
   const navigate = useNavigate();
+  const resolvedImage = imageUrl || imagem || getRaffleImageUrl(raffle);
 
   function handleClick() {
     navigate(`/rifa/${id}`);
@@ -36,11 +41,13 @@ function RaffleCard({
 
   return (
     <div onClick={handleClick} className="raffle-card">
-      <h2 className="raffle-card-title">{nome}</h2>
+      <RaffleImage
+        src={resolvedImage}
+        alt={nome || "Imagem da rifa"}
+        className="raffle-card-image"
+      />
 
-      {imagem && (
-        <img src={imagem} alt={nome || "Imagem da rifa"} className="raffle-card-image" />
-      )}
+      <h2 className="raffle-card-title">{nome}</h2>
       
       {categoria && <span className="raffle-card-tag">{categoria}</span>}
       

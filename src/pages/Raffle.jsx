@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext"; // Hooked into unified authent
 import NumberCard from "../components/NumberCard";
 import PurchaseModal from "../components/PurchaseModal";
 import RaffleService from "../services/raffleService";
+import RaffleImage from "../components/RaffleImage";
 import { getRaffleImageUrl } from "../utils/raffleImage";
 
 /**
@@ -94,13 +95,11 @@ function Raffle() {
     return (
         <div style={styles.container}>
             <h1>{raffleTitle}</h1>
-            {imageUrl && (
-                <img
-                    src={imageUrl}
-                    alt={raffleTitle}
-                    style={styles.raffleImage}
-                />
-            )}
+            <RaffleImage
+                src={imageUrl}
+                alt={raffleTitle}
+                style={styles.raffleImage}
+            />
             <p>{raffle.descricao || raffle.description}</p>
             <p>Instituição responsável: {raffle.instituicao || raffle.institution}</p>
             <p>Categoria: {raffle.categoria || raffle.category}</p>

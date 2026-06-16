@@ -221,12 +221,13 @@ function AdminDashboard() {
               <div key={raffle.id} style={styles.cardWrapper}>
                 <RaffleCard
                   id={raffle.id}
+                  raffle={raffle}
                   nome={raffle.title || raffle.name || raffle.nome}
-                  imagem={raffle.imageUrl || getRaffleImageUrl(raffle)}
+                  imageUrl={getRaffleImageUrl(raffle)}
                   descricao={raffle.description || raffle.descricao}
                   valor_numero={raffle.ticketPrice ?? raffle.valor_numero}
                   categoria={raffle.category || raffle.categoria}
-                  instituicao={raffle.institution || raffle.instituicao}
+                  instituicao={raffle.institution || raffle.instituicao || raffle.prize}
                   quantidade_numeros={raffle.totalTickets ?? raffle.quantidade_numeros}
                   data_sorteio={raffle.drawDate || raffle.data_sorteio}
                 />
