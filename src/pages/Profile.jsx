@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext"; 
 import { userApi } from "../api/user.api";
+import ImageUploader from "../components/ImageUploader";
 
 /**
  * Utility helper to apply a live Brazilian phone mask layout: (XX) XXXXX-XXXX or (XX) XXXX-XXXX
@@ -22,8 +23,7 @@ function Profile() {
   // Extract global session tracking states and synchronization mechanisms from context
   const { user: contextUser, loading, updateUser } = useAuth();
   
-  // DOM reference to trigger the hidden native file input programmatically
-  const fileInputRef = useRef(null);
+
   
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false); // Manages loading feedback and restricts actions while updating
@@ -78,23 +78,6 @@ function Profile() {
    * Handles local file selection, validates constraints, and encodes binary data to a Base64 string.
    * @param {React.ChangeEvent<HTMLInputElement>} e - Native file input change event
    */
-  function handleFileChange(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Security & Performance Guard: Reject files larger than 2MB to keep payload overhead lightweight
-    if (file.size > 2 * 1024 * 1024) {
-      alert("A imagem é muito grande! Escolha uma foto de no máximo 2MB.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      // FileReader converts the image file into a base64 encoded data URL string
-      setUser((prev) => ({ ...prev, photo: reader.result }));
-    };
-    reader.readAsDataURL(file);
-  }
 
   /**
    * Validates state data consistency rules before dispatching record updates upstream to API and context.
@@ -155,47 +138,12 @@ function Profile() {
         <h2 style={styles.sectionTitle}>Informações Pessoais</h2>
 
         {/* Interactive Interactive Avatar Container */}
-        <div 
-          style={{ 
-            ...styles.avatarWrapper, 
-            cursor: isEditing && !isSaving ? "pointer" : "default",
-            opacity: isSaving ? 0.7 : 1 
-          }}
-          onClick={handleAvatarClick}
-          title={isEditing ? "Clique para alterar sua foto de perfil" : ""}
-        >
-          <img src={user.photo} alt="User Avatar Display" style={styles.avatarImage} />
-          
-          {/* Visual indicator overlay badge (Magnifying glass lens icon) displayed exclusively during edit mode */}
-          {isEditing && (
-            <div style={styles.avatarOverlayBadge}>
-              <svg 
-                width="16" 
-                height="16" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="#ffffff" 
-                strokeWidth="3" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </div>
-          )}
-        </div>
-
-        {/* Completely hidden native file input controlled via React ref bridges */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          name="photoFile"
-          accept="image/*"
-          style={{ display: "none" }}
-          onChange={handleFileChange}
-          disabled={isSaving}
+        <ImageUploader 
+          value={user.photo} 
+          onChange={(newValue) => setUser((prev) => ({ ...prev, photo: newValue }))}
+          disabled={!isEditing}
         />
+        {/* Completely hidden native file input controlled via React ref bridges */}
 
         <div style={styles.inputsGroup}>
           <label style={styles.label}>Nome Completo *</label>
