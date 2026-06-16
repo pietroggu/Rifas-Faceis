@@ -260,7 +260,7 @@ function MyRaffles() {
                   style={styles.button}
                   onClick={() => navigate(`/rifa/${raffle.id}`)}
                 >
-                  Ver detalhes da rifa
+                  Ver os detalhes da rifa
                 </button>
               </div>
             );

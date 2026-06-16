@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 import Layout from "./components/layout/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -21,19 +22,25 @@ function App() {
       {/* Wrapped entire routes layout context framework to inject real-time state listeners */}
       <AuthProvider>
         <Routes>
-          {/* Public authentication routes */}
+          {/* Rotas públicas */}
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected core business layout routes shell */}
+          {/* Rotas protegidas — qualquer usuário logado */}
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route path="/home" element={<Home />} />
-              <Route path="/adminDashboard" element={<AdminDashboard />} />
+              <Route path="/rifa/:id" element={<RaffleDetails />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/myRaffles" element={<MyRaffles />} />
-              <Route path="/rifa/:id" element={<RaffleDetails />} />
+            </Route>
+          </Route>
+
+          {/* Rotas exclusivas de admin — exige role === 1 */}
+          <Route element={<AdminRoute />}>
+            <Route element={<Layout />}>
+              <Route path="/adminDashboard" element={<AdminDashboard/>} />
             </Route>
           </Route>
         </Routes>

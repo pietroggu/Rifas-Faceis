@@ -43,6 +43,7 @@ function Profile() {
   useEffect(() => {
     if (contextUser) {
       setUser({
+        
         name: contextUser.name || "",
         email: contextUser.email || "",
         phone: contextUser.phone ? formatBrazilianPhone(contextUser.phone) : "", // Apply formatting on load
