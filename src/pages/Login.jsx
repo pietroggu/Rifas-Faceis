@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Input from "../components/Input";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
-import { useNavigate, Navigate, Link } from "react-router-dom";
+import { useNavigate, Navigate, Link, useLocation } from "react-router-dom";
 
 /**
  * Authentication login interface screen.
@@ -20,6 +20,15 @@ function Login() {
     // Deconstruct dynamic loading triggers and global context dispatcher state
     const { loginUser, loading, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+
+    const location = useLocation();
+    const successMessage = location.state?.successMessage;
+
+    useEffect(() => {
+        if (successMessage) {
+            window.history.replaceState({}, document.title);
+        }
+    }, [successMessage]);
 
     const buttonStyle = {
         ...styles.button,
@@ -113,11 +122,15 @@ function Login() {
                     <h3 className="header">Login</h3>
                 </div>
 
-                {generalError && (
+                {generalError ? (
                     <div style={styles.errorBox}>
                         {generalError}
                     </div>
-                )}
+                ) : successMessage ? (
+                    <div style={styles.successBox}>
+                        {successMessage}
+                    </div>
+                ) : null}
 
                 <Input
                     label="Email"
@@ -248,6 +261,15 @@ const styles = {
     rememberLabel: {
         cursor: "pointer",
         color: "#333"
+    },
+
+    successBox: {
+        background: "#DCFCE7",
+        color: "#166534",
+        padding: "10px",
+        borderRadius: "5px",
+        marginBottom: "10px",
+        fontSize: "14px",
     },
 };
 
