@@ -38,7 +38,9 @@ function RaffleCard({
     <div onClick={handleClick} className="raffle-card">
       <h2 className="raffle-card-title">{nome}</h2>
 
-      {imagem && <img src={image_url} alt={nome} className="raffle-card-image" />}
+      {imagem && (
+        <img src={imagem} alt={nome || "Imagem da rifa"} className="raffle-card-image" />
+      )}
       
       {categoria && <span className="raffle-card-tag">{categoria}</span>}
       

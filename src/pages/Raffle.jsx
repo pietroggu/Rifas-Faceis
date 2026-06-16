@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext"; // Hooked into unified authent
 import NumberCard from "../components/NumberCard";
 import PurchaseModal from "../components/PurchaseModal";
 import RaffleService from "../services/raffleService";
+import { getRaffleImageUrl } from "../utils/raffleImage";
 
 /**
  * Raffle dashboard grid matrix management component.
@@ -87,14 +88,17 @@ function Raffle() {
     if (loading) return <p style={styles.stateText}>Carregando...</p>;
     if (!raffle) return <p style={styles.stateText}>Rifa não encontrada</p>;
 
+    const imageUrl = raffle.imageUrl || getRaffleImageUrl(raffle);
+    const raffleTitle = raffle.nome || raffle.name || raffle.title;
+
     return (
         <div style={styles.container}>
-            <h1>{raffle.nome || raffle.name}</h1>
-            {(raffle.imagem || raffle.image) && (
-                <img 
-                    src={raffle.image_url} 
-                    alt={raffle.name} 
-                    style={{ maxWidth: "100%", maxHeight: "300px", borderRadius: "8px" }} 
+            <h1>{raffleTitle}</h1>
+            {imageUrl && (
+                <img
+                    src={imageUrl}
+                    alt={raffleTitle}
+                    style={styles.raffleImage}
                 />
             )}
             <p>{raffle.descricao || raffle.description}</p>
@@ -135,6 +139,15 @@ const styles = {
         padding: "40px",
         fontSize: "1.1rem",
         color: "#64748b"
+    },
+    raffleImage: {
+        maxWidth: "100%",
+        maxHeight: "320px",
+        borderRadius: "12px",
+        objectFit: "cover",
+        margin: "16px auto",
+        display: "block",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
     },
     grid: {
         display: "grid",

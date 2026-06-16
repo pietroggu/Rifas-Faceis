@@ -48,12 +48,21 @@
   margin: 0 0 12px 0;
 }
 
+.raffle-card-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  display: block;
+}
+
 .raffle-card-footer {
   border-top: 1px solid #f1f5f9;
   padding-top: 12px;
   margin-top: 12px;
   display: flex;
-  justifyContent: space-between;
+  justify-content: space-between;
   font-size: 0.9rem;
 }
 

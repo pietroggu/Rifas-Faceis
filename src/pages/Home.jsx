@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import RaffleCard from "../components/RaffleCard";
-import { raffleApi } from "../api/raffle.api"; // Unified api module instance
+import RaffleService from "../services/raffleService";
+import { getRaffleImageUrl } from "../utils/raffleImage";
 
 /**
  * Main dashboard page that displays and filters all available raffles.
@@ -16,7 +17,7 @@ function Home() {
   useEffect(() => {
     async function fetchRaffles() {
       try {
-        const data = await raffleApi.getAllRaffles();
+        const data = await RaffleService.getAllRaffles();
         // Fallback check to avoid structural mapping runtime crashes
         setRaffles(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -120,13 +121,14 @@ function Home() {
               {/* Maps backend properties dynamically into your component parameters */}
               <RaffleCard
                 id={raffle.id}
-                nome={raffle.name}
-                descricao={raffle.description}
-                valor_numero={raffle.ticketPrice}
-                categoria={raffle.category}
-                instituicao={raffle.prize} // Fallback parameter mapping to prize if needed
-                quantidade_numeros={raffle.totalTickets}
-                data_sorteio={raffle.drawDate}
+                nome={raffle.name || raffle.title || raffle.nome}
+                imagem={raffle.imageUrl || getRaffleImageUrl(raffle)}
+                descricao={raffle.description || raffle.descricao}
+                valor_numero={raffle.ticketPrice ?? raffle.valor_numero}
+                categoria={raffle.category || raffle.categoria}
+                instituicao={raffle.institution || raffle.instituicao}
+                quantidade_numeros={raffle.totalTickets ?? raffle.quantidade_numeros}
+                data_sorteio={raffle.drawDate || raffle.data_sorteio}
               />
             </div>
           ))}

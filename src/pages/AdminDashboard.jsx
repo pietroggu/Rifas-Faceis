@@ -20,6 +20,7 @@ function AdminDashboard() {
     institution: "",
     date: "",
     category: "",
+    imageUrl: "",
   });
 
   useEffect(() => {
@@ -49,13 +50,29 @@ function AdminDashboard() {
     setNewRaffle((prev) => ({ ...prev, [name]: value }));
   }
 
+  function handleImageChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("A imagem é muito grande! Escolha uma foto de no máximo 2MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewRaffle((prev) => ({ ...prev, imageUrl: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  }
+
   /**
    * Validates, maps payload fields to DB structure, and submits a new raffle.
    */
   async function handleCreateRaffle(e) {
     e.preventDefault();
 
-    const { title, price, totalNumbers, date, description, institution, category } = newRaffle;
+    const { title, price, totalNumbers, date, description, institution, category, imageUrl } = newRaffle;
 
     if (!title || !price || !totalNumbers || !date || !description || !institution || !category) {
       alert("Preencha todos os campos obrigatórios!");
@@ -74,6 +91,11 @@ function AdminDashboard() {
         drawDate: date,
       };
 
+      if (imageUrl) {
+        backendPayload.imageUrl = imageUrl;
+        backendPayload.imagem = imageUrl;
+      }
+
       await RaffleService.createRaffle(backendPayload);
       alert("Rifa criada com sucesso!");
       
@@ -86,6 +108,7 @@ function AdminDashboard() {
         institution: "",
         date: "",
         category: "",
+        imageUrl: "",
       });
       setShowForm(false);
       await loadRaffles();
@@ -165,6 +188,19 @@ function AdminDashboard() {
             value={newRaffle.description}
             onChange={handleInputChange}
           />
+
+          <label style={styles.fileLabel}>
+            Imagem do item (opcional)
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={styles.fileInput}
+            />
+          </label>
+          {newRaffle.imageUrl && (
+            <img src={newRaffle.imageUrl} alt="Prévia" style={styles.imagePreview} />
+          )}
           
           <button style={styles.submitButton} type="submit">
             Confirmar Criação
@@ -185,13 +221,14 @@ function AdminDashboard() {
               <div key={raffle.id} style={styles.cardWrapper}>
                 <RaffleCard
                   id={raffle.id}
-                  nome={raffle.title}
-                  descricao={raffle.description}
-                  valor_numero={raffle.ticketPrice}
-                  categoria={raffle.category}
-                  instituicao={raffle.institution}
-                  quantidade_numeros={raffle.totalTickets}
-                  data_sorteio={raffle.drawDate}
+                  nome={raffle.title || raffle.name || raffle.nome}
+                  imagem={raffle.imageUrl || getRaffleImageUrl(raffle)}
+                  descricao={raffle.description || raffle.descricao}
+                  valor_numero={raffle.ticketPrice ?? raffle.valor_numero}
+                  categoria={raffle.category || raffle.categoria}
+                  instituicao={raffle.institution || raffle.instituicao}
+                  quantidade_numeros={raffle.totalTickets ?? raffle.quantidade_numeros}
+                  data_sorteio={raffle.drawDate || raffle.data_sorteio}
                 />
               </div>
             ))}
@@ -249,6 +286,24 @@ const styles = {
     border: "1px solid #cbd5e1",
     outline: "none",
     fontFamily: "inherit",
+  },
+  fileLabel: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    fontSize: "0.9rem",
+    color: "#475569",
+    textAlign: "left",
+  },
+  fileInput: {
+    fontSize: "0.85rem",
+  },
+  imagePreview: {
+    width: "100%",
+    maxHeight: "180px",
+    objectFit: "cover",
+    borderRadius: "8px",
+    border: "1px solid #e2e8f0",
   },
   submitButton: {
     padding: "12px",

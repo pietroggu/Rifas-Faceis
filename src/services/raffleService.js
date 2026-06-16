@@ -1,4 +1,5 @@
 import { raffleApi } from "../api/raffle.api";
+import { getRaffleImageUrl } from "../utils/raffleImage";
 
 /**
  * Manages business logic, inputs validation, and data formatting for raffles.
@@ -54,9 +55,13 @@ class RaffleService {
    * @param {Object} raffleData
    */
   static async createRaffle(raffleData) {
-    if (!raffleData.title || !raffleData.price) {
+    const title = raffleData.title ?? raffleData.nome;
+    const price = raffleData.price ?? raffleData.ticketPrice ?? raffleData.valor_numero;
+
+    if (!title || !price) {
       throw new Error("Title and price are required fields.");
     }
+
     return await raffleApi.create(raffleData);
   }
 
@@ -81,10 +86,11 @@ class RaffleService {
 
     return {
       ...raffle,
+      imageUrl: getRaffleImageUrl(raffle),
       formattedPrice: new Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL",
-      }).format(raffle.price || 0),
+      }).format(raffle.ticketPrice ?? raffle.price ?? raffle.valor_numero ?? 0),
       salesProgress: Math.round((soldTickets / totalTickets) * 100),
       isSoldOut: soldTickets >= totalTickets,
       formattedDrawDate: raffle.drawDate
