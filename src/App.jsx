@@ -33,7 +33,7 @@ function App() {
               <Route path="/rifa/:id" element={<RaffleDetails />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/faq" element={<FAQ />} />
-              <Route path="/myraffles" element={<MyRaffles />} />
+              <Route path="/myRaffles" element={<MyRaffles />} />
             </Route>
           </Route>
 
