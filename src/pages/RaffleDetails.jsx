@@ -18,6 +18,7 @@ export default function RaffleDetails() {
   const [error, setError] = useState(null);
   const [selectedNumber, setSelectedNumber] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [cartMessage, setCartMessage] = useState("");
 
   useEffect(() => {
     async function fetchRaffleData() {
@@ -71,7 +72,7 @@ export default function RaffleDetails() {
     });
 
     setModalOpen(false);
-    alert(`Número ${data.number} adicionado ao carrinho!`);
+    setCartMessage(`Número ${data.number} adicionado ao carrinho!`);
   }
 
   if (loading) return <p style={styles.stateText}>Carregando detalhes da rifa...</p>;
@@ -80,6 +81,7 @@ export default function RaffleDetails() {
 
   return (
     <main style={styles.container}>
+      
       <header>
         <h1>{raffle.name}</h1>
         {raffle.description && <p style={styles.description}>{raffle.description}</p>}
@@ -97,12 +99,24 @@ export default function RaffleDetails() {
         <p>💰 Valor por número: <strong>{raffle.formattedPrice}</strong></p>
         <p>📅 Data do Sorteio: {raffle.formattedDrawDate}</p>
       </section>
+        {cartMessage && (
+          <div style={styles.successAlert}>
+            <span style={styles.alertText}>{cartMessage}</span>
+            <button 
+              onClick={() => setCartMessage("")} 
+              style={styles.closeAlertButton}
+              title="Fechar aviso"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
       {/* Botão flutuante ou de atalho para ir ao carrinho se houver itens */}
       {cartItems.length > 0 && (
         <button 
           onClick={() => navigate("/cart")} 
-          style={{ padding: "10px 20px", marginBottom: "20px", cursor: "pointer", backgroundColor: "#10B981", color: "#fff", border: "none", borderRadius: "5px" }}
+          style={{ padding: "10px 20px", marginBottom: "20px", cursor: "pointer", backgroundColor: "#2563EB", color: "#fff", border: "none", borderRadius: "5px" }}
         >
           Ver Carrinho ({cartItems.length})
         </button>
@@ -122,6 +136,7 @@ export default function RaffleDetails() {
             />
           );
         })}
+        
       </section>
 
       <PurchaseModal
@@ -144,4 +159,35 @@ const styles = {
   metaDetails: { margin: "20px auto", maxWidth: "500px", padding: "15px", background: "#fff", borderRadius: "8px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", textAlign: "left" },
   stateText: { textAlign: "center", padding: "40px", fontSize: "1.1rem", color: "#64748b" },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, 50px)", gap: "10px", justifyContent: "center", marginTop: "30px" },
+ successAlert: {
+    display: "flex",
+    justifyContent: "space-between", // Joga o texto para a esquerda e o X para a direita
+    alignItems: "center",            // Alinha verticalmente no meio
+    backgroundColor: "#2563EB",      // Azul escuro
+    color: "#ffffff",
+    padding: "12px 20px",
+    borderRadius: "8px",
+    margin: "20px auto",
+    maxWidth: "500px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    animation: "fadeInEffect 0.25s ease-in-out forwards"
+  },
+  alertText: {
+    fontWeight: "bold",
+    textAlign: "left",
+    flex: 1, // Faz o texto ocupar o espaço necessário
+  },
+  closeAlertButton: {
+    background: "none",
+    border: "none",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "1.2rem",
+    fontWeight: "bold",
+    marginLeft: "15px",
+    padding: "0 5px",
+    lineHeight: "1",
+    opacity: "0.8",
+    transition: "opacity 0.2s",
+  },
 };
