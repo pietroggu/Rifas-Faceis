@@ -23,6 +23,7 @@ function App() {
     <BrowserRouter>
       {/* Wrapped entire routes layout context framework to inject real-time state listeners */}
       <AuthProvider>
+        <CartProvider>
         <Routes>
           {/* Rotas públicas */}
           <Route path="/" element={<Login />} />
@@ -48,6 +49,7 @@ function App() {
             </Route>
           </Route>
         </Routes>
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   );

@@ -44,13 +44,15 @@ function Sidebar() {
             <Ticket size={18} /> Minhas rifas
           </NavLink>
 
+          <NavLink to="/cart" onClick={() => setOpen(false)} className={getNavLinkClass}>
+            🛒 Carrinho
+          </NavLink>
+
           <NavLink to="/faq" onClick={() => setOpen(false)} className={getNavLinkClass}>
             <HelpCircle size={18} /> Ajuda
           </NavLink>
           
-          <NavLink to="/cart" onClick={() => setOpen(false)} className={getNavLinkClass}>
-            🛒 Carrinho
-          </NavLink>
+          
 
           {/* Renderização condicional agora funciona pois o 'user' está definido */}
           {user && user.role === 1 && (
