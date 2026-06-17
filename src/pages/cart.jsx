@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import RaffleService from "../services/raffleService";
-import logo from "../assets/logo.png";
 import pix from "../assets/pix-image.webp"; // Importação da sua imagem estática
+import CartItemCard from "../components/CartItemCard";
+import CartSummary from "../components/CartSummary";
 
 function Cart() {
     const navigate = useNavigate();
@@ -16,6 +17,25 @@ function Cart() {
     const [pixModalOpen, setPixModalOpen] = useState(false);
 
     const total = cartItems.reduce((acc, item) => acc + item.price, 0);
+    const groupedItems = Object.values(
+        cartItems.reduce((acc, item) => {
+            if (!acc[item.raffleId]) {
+                acc[item.raffleId] = {
+                    raffleId: item.raffleId,
+                    raffleName: item.raffleName,
+                    numbers: [],
+                    quantity: 0,
+                    totalPrice: 0,
+                };
+            }
+
+            acc[item.raffleId].numbers.push(item.number);
+            acc[item.raffleId].quantity += 1;
+            acc[item.raffleId].totalPrice += item.price;
+
+            return acc;
+        }, {})
+    );
 
     // Abre o modal de pagamento se houver itens no carrinho
     const handleOpenPayment = () => {
@@ -52,61 +72,55 @@ function Cart() {
 
     return (
         <div style={styles.page}>
-            <div style={styles.card}>
-                <img src={logo} alt="Rifas Fáceis" style={styles.logo} />
-                <h1 style={styles.title}>Seu Carrinho</h1>
+            <div style={styles.container}>
+                <div style={styles.header}>
+                    <h1 style={styles.title}>
+                        Carrinho
+                    </h1>
+                    <p style={styles.subtitle}>
+                        {groupedItems.length} rifas • {cartItems.length} números selecionados<br></br>
+                        Revise seus números antes de finalizar.
+                    </p>
+                </div>
 
-                <div style={styles.numbersContainer}>
-                    {cartItems.length === 0 ? (
-                        <p style={{ color: "#64748b" }}>Nenhum número selecionado ainda.</p>
-                    ) : (
-                        cartItems.map((item) => (
-                            <div key={`${item.raffleId}-${item.number}`} style={styles.numberItem}>
-                                <div>
-                                    <small style={{ display: "block", fontSize: "0.75rem", opacity: 0.9 }}>
-                                        {item.raffleName}
-                                    </small>
-                                    <strong>Número #{item.number}</strong>
-                                    <span style={{ display: "block", fontSize: "0.85rem" }}>
-                                        R$ {item.price.toFixed(2)}
-                                    </span>
-                                </div>
-                                <button 
-                                    onClick={() => removeFromCart(item.raffleId, item.number)}
-                                    style={styles.removeButton}
-                                    title="Remover"
+                <div style={styles.grid}>
+                    <div style={styles.itemsColumn}>
+                        {cartItems.length === 0 ? (
+                            <div style={styles.emptyState}>
+                                <h2>Seu carrinho está vazio</h2>
+
+                                <p>
+                                    Você ainda não selecionou nenhum número.
+                                </p>
+
+                                <button
+                                    style={styles.emptyButton}
+                                    onClick={() => navigate("/")}
                                 >
-                                    ✕
+                                    Ver Rifas Disponíveis
                                 </button>
                             </div>
-                        ))
-                    )}
+                        ) : (
+                            groupedItems.map((raffle) => (
+                                <CartItemCard
+                                    key={raffle.raffleId}
+                                    raffle={raffle}
+                                    onRemove={removeFromCart}
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    <div style={styles.summaryColumn}>
+                        <CartSummary
+                            total={total}
+                            quantity={cartItems.length}
+                            isSubmitting={isSubmitting}
+                            onCheckout={handleOpenPayment}
+                            onBack={() => navigate(-1)}
+                        />
+                    </div>
                 </div>
-
-                <div style={styles.summary}>
-                    <p>Quantidade total: {cartItems.length}</p>
-                    <p>Total: R$ {total.toFixed(2)}</p>
-                </div>
-
-                <button
-                    style={{ 
-                        ...styles.checkoutButton, 
-                        backgroundColor: isSubmitting || cartItems.length === 0 ? "#cbd5e1" : "#10B981",
-                        color: "#fff"
-                    }}
-                    onClick={handleOpenPayment}
-                    disabled={isSubmitting || cartItems.length === 0}
-                >
-                    {isSubmitting ? "Processando..." : "Ir para o Pagamento"}
-                </button>
-
-                <button
-                    style={styles.backButton}
-                    onClick={() => navigate(-1)}
-                    disabled={isSubmitting}
-                >
-                    Continuar Comprando
-                </button>
             </div>
 
             {/* --- MODAL DO PIX --- */}
@@ -128,7 +142,12 @@ function Cart() {
                             
                             <div style={styles.pixInfo}>
                                 <span style={styles.infoLabel}>Valor a pagar:</span>
-                                <strong style={styles.infoValue}>R$ {total.toFixed(2)}</strong>
+                                <strong>
+                                    {total.toLocaleString("pt-BR", {
+                                        style: "currency",
+                                        currency: "BRL",
+                                    })}
+                                </strong>
                                 <small style={{ color: "#64748b", marginTop: "10px" }}>Beneficiário: Rifa Fácil Ltda</small>
                                 <small style={{ color: "#ef4444", marginTop: "5px", fontSize: "0.75rem", fontWeight: "bold" }}>
                                     ⚠️ Digite o valor exato no app do seu banco!
@@ -137,8 +156,14 @@ function Cart() {
                         </div>
 
                         <div style={styles.modalFooter}>
-                            <button style={styles.confirmPaymentBtn} onClick={handleConfirmPayment}>
-                                Confirmar Pagamento
+                            <button
+                                style={styles.confirmPaymentBtn}
+                                onClick={handleConfirmPayment}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting
+                                    ? "Processando..."
+                                    : "Confirmar Pagamento"}
                             </button>
                         </div>
                     </div>
@@ -149,19 +174,32 @@ function Cart() {
 }
 
 const styles = {
-    page: { minHeight: "100vh", backgroundColor: "#3B82F6", display: "flex", justifyContent: "center", alignItems: "center", padding: "20px" },
-    card: { backgroundColor: "#eaebed", borderRadius: "20px", padding: "30px", width: "100%", maxWidth: "500px", textAlign: "center", boxShadow: "0 10px 25px rgba(0,0,0,0.2)" },
-    logo: { width: "120px", marginBottom: "20px" },
-    title: { marginBottom: "20px" },
-    numbersContainer: { display: "flex", flexDirection: "column", gap: "10px", justifyContent: "center", marginBottom: "20px", maxHeight: "250px", overflowY: "auto" },
-    numberItem: { backgroundColor: "#3B82F6", color: "#fff", padding: "10px 15px", borderRadius: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left" },
-    removeButton: { background: "none", border: "none", color: "#fff", cursor: "pointer", fontSize: "1.1rem", fontWeight: "bold", marginLeft: "10px" },
-    summary: { marginBottom: "20px", fontWeight: "bold" },
-    checkoutButton: { width: "100%", padding: "12px", border: "none", borderRadius: "10px", cursor: "pointer", marginBottom: "10px", fontWeight: "bold" },
-    backButton: { width: "100%", padding: "12px", border: "none", borderRadius: "10px", cursor: "pointer", backgroundColor: "#fff", color: "#3B82F6", fontWeight: "bold" },
-    
+    page: {
+        minHeight: "100vh",
+        backgroundColor: "#f8fafc",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        padding: "40px 20px",
+    },
+
+    title: {
+        margin: 0,
+        color: "#0f172a",
+        fontSize: "2rem",
+        fontWeight: "800",
+    },
+
+    modalContent: {
+        backgroundColor: "#fff",
+        borderRadius: "20px",
+        padding: "32px",
+        width: "90%",
+        maxWidth: "500px",
+        position: "relative",
+    },
+
     modalOverlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 },
-    modalContent: { backgroundColor: "#fff", padding: "30px", borderRadius: "15px", width: "90%", maxWidth: "450px", position: "relative", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.3)" },
     closeModalX: { position: "absolute", top: "15px", right: "15px", background: "none", border: "none", fontSize: "1.2rem", cursor: "pointer", color: "#64748b" },
     modalTitle: { margin: "0 0 5px 0", color: "#1e293b" },
     modalSubtitle: { margin: "0 0 25px 0", color: "#64748b", fontSize: "0.95rem" },
@@ -171,7 +209,58 @@ const styles = {
     infoLabel: { fontSize: "0.85rem", color: "#64748b" },
     infoValue: { fontSize: "1.6rem", color: "#10B981" },
     modalFooter: { display: "flex", justifyContent: "flex-end", width: "100%" },
-    confirmPaymentBtn: { backgroundColor: "#10B981", color: "#fff", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "0.95rem", boxShadow: "0 2px 4px rgba(16,185,129,0.2)" }
+    confirmPaymentBtn: { backgroundColor: "#10B981", color: "#fff", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "0.95rem", boxShadow: "0 2px 4px rgba(16,185,129,0.2)" },
+
+    container: {
+        width: "100%",
+        maxWidth: "1400px",
+    },
+
+    grid: {
+        display: "grid",
+        gridTemplateColumns: "minmax(0, 2fr) 380px",
+        gap: "24px",
+        alignItems: "start",
+    },
+
+    itemsColumn: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
+    },
+
+    summaryColumn: {
+        position: "sticky",
+        top: "20px",
+    },
+
+    emptyState: {
+        backgroundColor: "#eaebed",
+        borderRadius: "20px",
+        padding: "40px",
+        textAlign: "center",
+    },
+
+    emptyButton: {
+        marginTop: "20px",
+        padding: "14px 20px",
+        borderRadius: "12px",
+        border: "none",
+        backgroundColor: "#2563eb",
+        color: "#fff",
+        fontWeight: "600",
+        cursor: "pointer",
+    },
+
+    header: {
+        marginBottom: "32px",
+    },
+
+    subtitle: {
+        margin: "8px 0 0 0",
+        color: "#64748b",
+        fontSize: "0.95rem",
+    },
 };
 
 export default Cart;
