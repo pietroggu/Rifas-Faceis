@@ -49,7 +49,7 @@ function Sidebar() {
           </NavLink>
           
           <NavLink to="/cart" onClick={() => setOpen(false)} className={getNavLinkClass}>
-            <ShoppingCart size={18} />  Carrinho
+            🛒 Carrinho
           </NavLink>
 
           {/* Renderização condicional agora funciona pois o 'user' está definido */}
