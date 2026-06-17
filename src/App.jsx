@@ -37,7 +37,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/myRaffles" element={<MyRaffles />} />
-              <Route path="/cart" element={<Cart />} />
+              <Route path="/Cart" element={<Cart />} />
             </Route>
           </Route>
 
