@@ -1,20 +1,17 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // Adicionado useNavigate
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext"; // Importar o CartContext
 import NumberCard from "../components/NumberCard";
 import PurchaseModal from "../components/PurchaseModal";
 import RaffleService from "../services/raffleService";
 
-/**
- * RaffleDetails Component
- * Renders the detailed view of a single raffle, including its information,
- * image, and an interactive grid for ticket selection and purchasing.
- */
 export default function RaffleDetails() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { addToCart, cartItems } = useCart(); // Utilizando o Contexto do Carrinho
+  const navigate = useNavigate();
 
-  // State Management
   const [raffle, setRaffle] = useState(null);
   const [numbers, setNumbers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,9 +19,6 @@ export default function RaffleDetails() {
   const [selectedNumber, setSelectedNumber] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  /**
-   * Fetches the raffle data and builds the interactive ticket grid.
-   */
   useEffect(() => {
     async function fetchRaffleData() {
       try {
@@ -37,7 +31,6 @@ export default function RaffleDetails() {
         const totalTickets = raffleData.totalTickets || 100;
         const soldTickets = raffleData.tickets || [];
 
-        // Generate the ticket grid grid matrix based on total capacity
         const generatedGrid = Array.from({ length: totalTickets }, (_, index) => {
           const currentNumber = index + 1;
           const isSold = soldTickets.some((ticket) => ticket.number === currentNumber);
@@ -63,40 +56,24 @@ export default function RaffleDetails() {
     }
   }, [id]);
 
-  /**
-   * Opens the purchase modal for the selected ticket number.
-   * @param {number} number - The chosen ticket number.
-   */
   const handleNumberClick = useCallback((number) => {
     setSelectedNumber(number);
     setModalOpen(true);
   }, []);
 
-  /**
-   * Handles the ticket purchase confirmation and updates the local state UI.
-   * @param {Object} data - Purchase details from the modal form.
-   */
-  async function handleConfirmPurchase(data) {
-    try {
-      await RaffleService.purchaseNumber(id, data.number, {
-        name: data.name,
-        phone: data.phone,
-        userId: data.userId, 
-      });
+  // ALTERADO: Agora adiciona ao carrinho em vez de enviar para a API
+  function handleConfirmPurchase(data) {
+    addToCart({
+      raffleId: id,
+      raffleName: raffle.name,
+      price: raffle.ticketPrice || 10, //Fallback caso não venha da API
+      number: data.number
+    });
 
-      alert(`Compra realizada com sucesso!\nNúmero: ${data.number}`);
-      setModalOpen(false);
-
-      // Optimistic local state update to avoid an extra API roundtrip
-      setNumbers((prevNumbers) =>
-        prevNumbers.map((n) => (n.number === data.number ? { ...n, isSold: true } : n))
-      );
-    } catch (err) {
-      alert(err.message || "Erro ao registrar compra. Tente novamente.");
-    }
+    setModalOpen(false);
+    alert(`Número ${data.number} adicionado ao carrinho!`);
   }
 
-  // Render State Blocks (Loading / Error)
   if (loading) return <p style={styles.stateText}>Carregando detalhes da rifa...</p>;
   if (error) return <p style={{ ...styles.stateText, color: "#ef4444" }}>{error}</p>;
   if (!raffle) return <p style={styles.stateText}>Rifa não encontrada.</p>;
@@ -108,7 +85,6 @@ export default function RaffleDetails() {
         {raffle.description && <p style={styles.description}>{raffle.description}</p>}
       </header>
 
-      {/* FIXED: Added image rendering support */}
       {raffle.imageUrl && (
         <div style={styles.imageWrapper}>
           <img src={raffle.imageUrl} alt={raffle.name} style={styles.image} />
@@ -122,16 +98,30 @@ export default function RaffleDetails() {
         <p>📅 Data do Sorteio: {raffle.formattedDrawDate}</p>
       </section>
 
-      {/* Ticket Grid Execution Block */}
+      {/* Botão flutuante ou de atalho para ir ao carrinho se houver itens */}
+      {cartItems.length > 0 && (
+        <button 
+          onClick={() => navigate("/cart")} 
+          style={{ padding: "10px 20px", marginBottom: "20px", cursor: "pointer", backgroundColor: "#10B981", color: "#fff", border: "none", borderRadius: "5px" }}
+        >
+          Ver Carrinho ({cartItems.length})
+        </button>
+      )}
+
       <section style={styles.grid} aria-label="Ticket Selection Grid">
-        {numbers.map((num) => (
-          <NumberCard
-            key={num.id}
-            number={num.number}
-            sold={num.isSold}
-            onClick={handleNumberClick}
-          />
-        ))}
+        {numbers.map((num) => {
+          // Checa se o número já está selecionado/reservado no carrinho global
+          const isInCart = cartItems.some(item => item.raffleId === id && item.number === num.number);
+          
+          return (
+            <NumberCard
+              key={num.id}
+              number={num.number}
+              sold={num.isSold || isInCart} // Fica desativado visualmente se já foi vendido ou se está no carrinho
+              onClick={handleNumberClick}
+            />
+          );
+        })}
       </section>
 
       <PurchaseModal
