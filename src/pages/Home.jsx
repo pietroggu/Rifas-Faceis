@@ -54,19 +54,41 @@ function Home() {
       return nameMatch && categoryMatch;
     })
     .sort((a, b) => {
+
+      if (a.isSoldOut && !b.isSoldOut) return 1;
+      if (!a.isSoldOut && b.isSoldOut) return -1;
+
       const priceA = a.ticketPrice || 0;
       const priceB = b.ticketPrice || 0;
       const nameA = a.name || "";
       const nameB = b.name || "";
 
+      if (sortBy === "mais_vendida") return (b.salesProgress || 0) - (a.salesProgress || 0);
+      if (sortBy === "proximo_sorteio") return new Date(a.drawDate) - new Date(b.drawDate);
       if (sortBy === "menor_preco") return priceA - priceB;
       if (sortBy === "maior_preco") return priceB - priceA;
       if (sortBy === "nome_az") return nameA.localeCompare(nameB);
-      if (sortBy === "nome_za") return nameB.localeCompare(nameA);
       return 0;
     });
 
-  if (loading) return <p style={styles.center}>Carregando rifas...</p>;
+  if (loading) {
+    return (
+      <div style={styles.container}>
+        <h1 style={styles.center}>🎯 Rifas Disponíveis</h1>
+
+        <div style={styles.grid}>
+          {[...Array(6)].map((_, index) => (
+            <div key={index} style={styles.skeletonCard}>
+              <div style={styles.skeletonImage}></div>
+              <div style={styles.skeletonLine}></div>
+              <div style={styles.skeletonLineSmall}></div>
+              <div style={styles.skeletonLine}></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (error) return <p style={styles.errorText}>Erro: {error}</p>;
 
   return (
@@ -100,18 +122,19 @@ function Home() {
           onChange={(e) => setSortBy(e.target.value)}
           style={styles.select}
         >
-          <option value="padrao">Ordem padrão</option>
+          <option value="padrao">Mais recentes</option>
+          <option value="mais_vendida">Mais vendidas</option>
+          <option value="proximo_sorteio">Próximo sorteio</option>
           <option value="menor_preco">Menor preço</option>
           <option value="maior_preco">Maior preço</option>
           <option value="nome_az">Nome A → Z</option>
-          <option value="nome_za">Nome Z → A</option>
         </select>
       </div>
       <p style={styles.resultCount}>
         {filteredRaffles.length}{" "}
         {filteredRaffles.length === 1
-          ? "rifa encontrada"
-          : "rifas encontradas"}
+          ? "rifa disponível"
+          : "rifas disponíveis"}
       </p>
 
       {raffles.length === 0 ? (
@@ -149,19 +172,60 @@ const styles = {
   container: { padding: "20px", textAlign: "center", backgroundColor: "#f8fafc", minHeight: "100vh" },
   center: { textAlign: "center", padding: "10px", margin: "5px", color: "#0f172a" },
   errorText: { textAlign: "center", color: "#ef4444", marginTop: "20px", fontWeight: "bold" },
-  cardWrapper: { flex: "1 1 280px", maxWidth: "320px", width: "100%" },
-  grid: { display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", marginTop: "20px" },
   controls: { display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", marginTop: "20px", marginBottom: "10px" },
   searchInput: { padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "14px", minWidth: "280px", outline: "none", color: "#334155" },
   select: { padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "14px", cursor: "pointer", backgroundColor: "#fff", outline: "none", color: "#334155" },
   
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 320px))",
+    justifyContent: "center",
+    gap: "20px",
+    marginTop: "20px",
+  },
+
+  cardWrapper: {
+    width: "100%",
+  },
+
   resultCount: {
-  textAlign: "center",
-  color: "#64748b",
-  marginTop: "10px",
-  marginBottom: "10px",
-  fontSize: "14px",
-},
+    textAlign: "center",
+    color: "#64748b",
+    marginTop: "10px",
+    marginBottom: "10px",
+    fontSize: "14px",
+  },
+
+  skeletonCard: {
+    width: "320px",
+    background: "#fff",
+    borderRadius: "12px",
+    padding: "16px",
+    border: "1px solid #e2e8f0",
+  },
+
+  skeletonImage: {
+    width: "100%",
+    height: "180px",
+    backgroundColor: "#e2e8f0",
+    borderRadius: "8px",
+    marginBottom: "12px",
+  },
+
+  skeletonLine: {
+    height: "16px",
+    backgroundColor: "#e2e8f0",
+    borderRadius: "4px",
+    marginBottom: "8px",
+  },
+
+  skeletonLineSmall: {
+    height: "12px",
+    width: "60%",
+    backgroundColor: "#e2e8f0",
+    borderRadius: "4px",
+    marginBottom: "8px",
+  },
 };
 
 export default Home;
