@@ -27,6 +27,9 @@ class RaffleService {
     const raffle = await raffleApi.getById(id);
     return this._enrichRaffleData(raffle);
   }
+  static async drawRaffle(id) {
+    return await raffleApi.draw(id);
+  }
 
   /**
    * Creates a new raffle.

@@ -74,5 +74,12 @@ export const raffleApi = {
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to delete raffle");
     }
-  }
+  },
+  draw: async (id) => {
+    const response = await httpClient.post(
+      `/raffles/${id}/draw`
+    );
+
+    return response.data;
+  },
 };
