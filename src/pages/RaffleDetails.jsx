@@ -1,17 +1,16 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Adicionado useNavigate
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useCart } from "../context/CartContext"; // Importar o CartContext
+import { useCart } from "../context/CartContext";
 import NumberCard from "../components/NumberCard";
 import PurchaseModal from "../components/PurchaseModal";
 import RaffleService from "../services/raffleService";
-import { Text } from "lucide-react";
 import { ShoppingCart } from "lucide-react";
 
 export default function RaffleDetails() {
   const { id } = useParams();
   const { user } = useAuth();
-  const { addToCart, cartItems } = useCart(); // Utilizando o Contexto do Carrinho
+  const { addToCart, cartItems } = useCart();
   const navigate = useNavigate();
 
   const [raffle, setRaffle] = useState(null);
@@ -27,7 +26,7 @@ export default function RaffleDetails() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const raffleData = await RaffleService.getRaffleById(id);
         setRaffle(raffleData);
 
@@ -40,14 +39,11 @@ export default function RaffleDetails() {
 
         const generatedGrid = Array.from({ length: totalTickets }, (_, index) => {
           const currentNumber = index + 1;
-
           const ticket = soldMap.get(currentNumber);
-
           return {
             id: currentNumber,
             number: currentNumber,
             isSold: !!ticket,
-            // Adicionamos o estado de validação diretamente ao objeto da grade
             validation: ticket ? (ticket.validation || 0) : 0,
           };
         });
@@ -61,9 +57,7 @@ export default function RaffleDetails() {
       }
     }
 
-    if (id) {
-      fetchRaffleData();
-    }
+    if (id) fetchRaffleData();
   }, [id]);
 
   const handleNumberClick = useCallback((number) => {
@@ -71,76 +65,95 @@ export default function RaffleDetails() {
     setModalOpen(true);
   }, []);
 
-  // ALTERADO: Agora adiciona ao carrinho em vez de enviar para a API
   function handleConfirmPurchase(data) {
     addToCart({
       raffleId: id,
       raffleName: raffle.name,
-      price: raffle.ticketPrice || 10, //Fallback caso não venha da API
-      number: data.number
+      price: raffle.ticketPrice || 10,
+      number: data.number,
     });
-
     setModalOpen(false);
   }
 
-  const soldCount = numbers.filter(
-    n => n.isSold && n.validation === 0
-  ).length;
-
-  const raffleItemsInCart = cartItems.filter(
-    item => item.raffleId === id
-  ).length;
-
-  const availableCount =
-    (raffle?.totalTickets || 0)
-    - soldCount
-    - raffleItemsInCart;
-
-  const progress =
-    raffle?.totalTickets
-      ? Math.round((soldCount / raffle.totalTickets) * 100)
-      : 0;
+  const soldCount = numbers.filter(n => n.isSold && n.validation === 0).length;
+  const raffleItemsInCart = cartItems.filter(item => item.raffleId === id).length;
+  const availableCount = (raffle?.totalTickets || 0) - soldCount - raffleItemsInCart;
+  const progress = raffle?.totalTickets
+    ? Math.round((soldCount / raffle.totalTickets) * 100)
+    : 0;
 
   const filteredNumbers = numbers.filter(num => {
     if (!searchNumber) return true;
-
-    return num.number
-      .toString()
-      .includes(searchNumber);
+    return num.number.toString().includes(searchNumber);
   });
-
 
   if (loading) return <p style={styles.stateText}>Carregando detalhes da rifa...</p>;
   if (error) return <p style={{ ...styles.stateText, color: "#ef4444" }}>{error}</p>;
   if (!raffle) return <p style={styles.stateText}>Rifa não encontrada.</p>;
 
+  const winnerTicket = raffle.tickets?.find(t => t.id === raffle.winnerTicketId);
+
   return (
     <main style={styles.container}>
-      
       <header>
         <h1>{raffle.name}</h1>
-        {raffle.description && <p style={styles.description}>{raffle.description}</p>}
+
+        {/* Card do vencedor — aparece apenas se o sorteio foi realizado */}
+        {raffle.drawnAt && (
+          <div style={styles.winnerCard}>
+            <div style={styles.winnerCardHeader}>
+              <div>
+                <p style={styles.winnerCardTitle}>Sorteio realizado</p>
+                <p style={styles.winnerCardDate}>
+                  {new Date(raffle.drawnAt).toLocaleString("pt-BR", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+            </div>
+
+            <div style={styles.winnerDivider} />
+
+            <div style={styles.winnerInfo}>
+              <div style={styles.winnerInfoItem}>
+                <span style={styles.winnerInfoLabel}>Número sorteado</span>
+                <span style={styles.winnerInfoValue}>
+                  #{winnerTicket?.number ?? "—"}
+                </span>
+              </div>
+              <div style={styles.winnerInfoItem}>
+                <span style={styles.winnerInfoLabel}>Vencedor</span>
+                <span style={styles.winnerInfoValue}>
+                  {raffle.winnerUser?.name ?? "—"}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {raffle.description && (
+          <p style={styles.description}>{raffle.description}</p>
+        )}
       </header>
+
+      {/* Botão de editar (para autores/admins) */}
       {(() => {
         const privilegedUsers = [3, 7];
-
         const canEdit =
           privilegedUsers.includes(Number(user?.id)) ||
           Number(raffle?.authorId) === Number(user?.id);
 
         return canEdit ? (
-          <div
-            style={{
-              maxWidth: "500px",
-              margin: "0 auto 16px",
-              textAlign: "center",
-            }}
-          >
+          <div style={{ maxWidth: "500px", margin: "0 auto 16px", textAlign: "center" }}>
             <button
               onClick={() => navigate(`/editar-rifa/${id}`)}
               style={{
                 padding: "8px 18px",
-                background: "#0b9bf5",
+                background: "#2563EB",
                 color: "#fff",
                 border: "none",
                 alignItems: "center",
@@ -157,22 +170,14 @@ export default function RaffleDetails() {
       })()}
 
       {cartItems.length > 0 && (
-        <button
-          onClick={() => navigate("/cart")}
-          style={styles.floatingCart}
-        >
+        <button onClick={() => navigate("/cart")} style={styles.floatingCart}>
           <ShoppingCart size={18} /> Carrinho ({raffleItemsInCart})
         </button>
       )}
-      
-      <div style={styles.prizeCard}>
-        <span style={styles.prizeLabel}>
-          🏆 PRÊMIO
-        </span>
 
-        <h2 style={styles.prizeText}>
-          {raffle.prize}
-        </h2>
+      <div style={styles.prizeCard}>
+        <span style={styles.prizeLabel}>🏆 PRÊMIO</span>
+        <h2 style={styles.prizeText}>{raffle.prize}</h2>
       </div>
 
       {raffle.imageUrl && (
@@ -187,65 +192,35 @@ export default function RaffleDetails() {
         <p>📅 Data do Sorteio: {raffle.formattedDrawDate}</p>
       </section>
 
-
       <div style={styles.statsContainer}>
         <div style={styles.statCard}>
-          <strong
-            style={{
-              fontSize: "1.4rem",
-              color: "#2563eb",
-            }}
-          >{raffle.totalTickets}</strong>
+          <strong style={{ fontSize: "1.4rem", color: "#2563eb" }}>
+            {raffle.totalTickets}
+          </strong>
           <span>Total</span>
         </div>
-
         <div style={styles.statCard}>
-          <strong
-            style={{
-              fontSize: "1.4rem",
-              color: "#64748b",
-            }}
-          >{soldCount}</strong>
+          <strong style={{ fontSize: "1.4rem", color: "#64748b" }}>
+            {soldCount}
+          </strong>
           <span>Vendidos</span>
         </div>
-
         <div style={styles.statCard}>
-          <strong
-            style={{
-              fontSize: "1.4rem",
-              color: "#10b981",
-            }}
-          >{availableCount}</strong>
+          <strong style={{ fontSize: "1.4rem", color: "#10b981" }}>
+            {availableCount}
+          </strong>
           <span>Disponíveis</span>
         </div>
       </div>
 
       <div style={styles.progressWrapper}>
         <div style={styles.progressContainer}>
-          <div
-            style={{
-              ...styles.progressBar,
-              width: `${progress}%`,
-            }}
-          />
+          <div style={{ ...styles.progressBar, width: `${progress}%` }} />
         </div>
-
-        <span style={styles.progressText}>
-          {progress}% vendido
-        </span>
+        <span style={styles.progressText}>{progress}% vendido</span>
       </div>
 
-
-      {/* Botão flutuante ou de atalho para ir ao carrinho se houver itens */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "12px",
-          marginBottom: "20px",
-          flexWrap: "wrap",
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
         <button
           onClick={() => navigate("/home")}
           style={{
@@ -262,7 +237,6 @@ export default function RaffleDetails() {
         </button>
       </div>
 
-
       <section style={styles.searchSection}>
         <input
           type="text"
@@ -275,41 +249,24 @@ export default function RaffleDetails() {
 
       <div style={styles.legend}>
         <div style={styles.legendItem}>
-          <div
-            style={{
-              ...styles.legendColor,
-              background: "#10b981",
-            }}
-          />
+          <div style={{ ...styles.legendColor, background: "#10b981" }} />
           Disponível
         </div>
-
         <div style={styles.legendItem}>
-          <div
-            style={{
-              ...styles.legendColor,
-              background: "#cbd5e1",
-            }}
-          />
+          <div style={{ ...styles.legendColor, background: "#cbd5e1" }} />
           Reservado/Vendido
         </div>
-
         <div style={styles.legendItem}>
-          <div
-            style={{
-              ...styles.legendColor,
-              background: "#2563eb",
-            }}
-          />
+          <div style={{ ...styles.legendColor, background: "#2563eb" }} />
           No carrinho
         </div>
       </div>
 
       <section style={styles.grid} aria-label="Ticket Selection Grid">
         {filteredNumbers.map((num) => {
-          // Checa se o número já está selecionado/reservado no carrinho global
-          const isInCart = cartItems.some(item => item.raffleId === id && item.number === num.number);
-          
+          const isInCart = cartItems.some(
+            item => item.raffleId === id && item.number === num.number
+          );
           return (
             <NumberCard
               key={num.id}
@@ -320,7 +277,6 @@ export default function RaffleDetails() {
             />
           );
         })}
-        
       </section>
 
       <PurchaseModal
@@ -336,22 +292,139 @@ export default function RaffleDetails() {
 }
 
 const styles = {
-  container: { padding: "40px 20px 120px", textAlign: "center", backgroundColor: "#f8fafc", minHeight: "100vh" },
-  description: { color: "#475569", fontSize: "1.1rem", margin: "10px 0 20px" },
-  imageWrapper: { margin: "20px auto", maxWidth: "500px", borderRadius: "8px", overflow: "hidden", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" },
-  image: { width: "100%", height: "auto", display: "block", objectFit: "cover", maxHeight: "300px" },
-  metaDetails: { margin: "20px auto", maxWidth: "500px", padding: "15px", background: "#fff", borderRadius: "8px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", textAlign: "left" },
-  stateText: { textAlign: "center", padding: "40px", fontSize: "1.1rem", color: "#64748b" },
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, 50px)", gap: "10px", justifyContent: "center", marginTop: "30px" },
-  
- prizeCard: {
+  container: {
+    padding: "40px 20px 120px",
+    textAlign: "center",
+    backgroundColor: "#f8fafc",
+    minHeight: "100vh",
+  },
+
+  description: {
+    color: "#475569",
+    fontSize: "1.1rem",
+    margin: "10px 0 20px",
+  },
+
+  /* ---------- CARD DO VENCEDOR ---------- */
+
+  winnerCard: {
+    maxWidth: "500px",
+    margin: "16px auto 20px",
+    background: "#fefce8",
+    border: "1px solid #fde68a",
+    borderRadius: "12px",
+    padding: "20px 24px",
+    textAlign: "left",
+    boxSizing: "border-box",
+  },
+
+  winnerCardHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "14px",
+  },
+
+  winnerTrophy: {
+    fontSize: "2.2rem",
+    lineHeight: 1,
+    flexShrink: 0,
+  },
+
+  winnerCardTitle: {
+    margin: 0,
+    fontWeight: "700",
+    color: "#92400e",
+    fontSize: "1rem",
+  },
+
+  winnerCardDate: {
+    margin: "2px 0 0",
+    color: "#b45309",
+    fontSize: "0.82rem",
+  },
+
+  winnerDivider: {
+    borderTop: "1px solid #fde68a",
+    margin: "14px 0",
+  },
+
+  winnerInfo: {
+    display: "flex",
+    gap: "24px",
+    flexWrap: "wrap",
+  },
+
+  winnerInfoItem: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+  },
+
+  winnerInfoLabel: {
+    fontSize: "0.75rem",
+    color: "#92400e",
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  },
+
+  winnerInfoValue: {
+    fontSize: "1.1rem",
+    fontWeight: "700",
+    color: "#78350f",
+  },
+
+  /* ---------- RESTANTE ---------- */
+
+  imageWrapper: {
+    margin: "20px auto",
+    maxWidth: "500px",
+    borderRadius: "8px",
+    overflow: "hidden",
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  },
+
+  image: {
+    width: "100%",
+    height: "auto",
+    display: "block",
+    objectFit: "cover",
+    maxHeight: "300px",
+  },
+
+  metaDetails: {
+    margin: "20px auto",
+    maxWidth: "500px",
+    padding: "15px",
+    background: "#fff",
+    borderRadius: "8px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    textAlign: "left",
+  },
+
+  stateText: {
+    textAlign: "center",
+    padding: "40px",
+    fontSize: "1.1rem",
+    color: "#64748b",
+  },
+
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, 50px)",
+    gap: "10px",
+    justifyContent: "center",
+    marginTop: "30px",
+  },
+
+  prizeCard: {
     background: "#fff",
     borderRadius: "12px",
     padding: "20px",
     margin: "0 auto 20px",
     maxWidth: "700px",
     borderLeft: "6px solid #f59e0b",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.08)"
+    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
   },
 
   prizeLabel: {
@@ -369,22 +442,22 @@ const styles = {
   },
 
   floatingCart: {
-      position: "fixed",
-      bottom: "70px",
-      right: "24px",
-      zIndex: 1000,
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      backgroundColor: "#2563eb",
-      color: "#fff",
-      border: "none",
-      borderRadius: "999px",
-      padding: "14px 18px",
-      fontWeight: "bold",
-      cursor: "pointer",
-      boxShadow: "0 8px 20px rgba(37,99,235,0.3)",
-    },
+    position: "fixed",
+    bottom: "70px",
+    right: "24px",
+    zIndex: 1000,
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    backgroundColor: "#2563eb",
+    color: "#fff",
+    border: "none",
+    borderRadius: "999px",
+    padding: "14px 18px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    boxShadow: "0 8px 20px rgba(37,99,235,0.3)",
+  },
 
   progressWrapper: {
     maxWidth: "500px",
@@ -468,5 +541,4 @@ const styles = {
     height: "16px",
     borderRadius: "4px",
   },
-  
 };

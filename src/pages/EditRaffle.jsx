@@ -18,13 +18,13 @@ export default function EditRaffle() {
     drawDate: "",
     imageUrl: "",
     description: "",
+    drawnAt: null,
   });
-  const [tickets, setTickets] = useState([]); // Nova lista de tickets
+  const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // Carrega os dados atuais da rifa e os tickets ao montar
   useEffect(() => {
     async function loadData() {
       try {
@@ -51,8 +51,6 @@ export default function EditRaffle() {
         }
 
         setUsers(usersMap);
-        console.log("RAFFLE:", raffle);
-        console.log("TICKETS:", raffle.tickets);
         setForm({
           name: raffle.name || "",
           prize: raffle.prize || "",
@@ -61,9 +59,9 @@ export default function EditRaffle() {
           drawDate: raffle.drawDate ? raffle.drawDate.slice(0, 10) : "",
           imageUrl: raffle.imageUrl || "",
           description: raffle.description || "",
+          drawnAt: raffle.drawnAt || null,
         });
-        
-        // Se o seu backend já retorna os tickets dentro da rifa:
+
         if (raffle.tickets) {
           setTickets(raffle.tickets);
         }
@@ -78,6 +76,17 @@ export default function EditRaffle() {
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
+  }
+
+  async function handleDraw() {
+    if (!window.confirm("Deseja realizar o sorteio?")) return;
+
+    try {
+      const winner = await RaffleService.drawRaffle(id);
+      alert(` Número vencedor: ${winner.number}`);
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   async function handleSave() {
@@ -96,20 +105,16 @@ export default function EditRaffle() {
     }
   }
 
-  // Função para cancelar um ticket específico
   async function handleCancelTicket(ticketId) {
     if (!window.confirm("Deseja realmente cancelar este ticket? O número voltará a ficar disponível. Tente primeiro entrar em contato com o comprador do número!")) return;
-    
+
     try {
       await TicketService.cancelTicket(ticketId);
-      
-      // ATUALIZAÇÃO: Garantimos que o ticket seja marcado como cancelado no estado local
-      setTickets(prev => prev.map(t => 
-        t.id === ticketId 
-          ? { ...t, validation: 1, userId: null, purchasedAt: null } 
+      setTickets(prev => prev.map(t =>
+        t.id === ticketId
+          ? { ...t, validation: 1, userId: null, purchasedAt: null }
           : t
       ));
-      
       alert("Ticket cancelado com sucesso!");
     } catch (err) {
       alert("Erro ao cancelar ticket: " + err.message);
@@ -119,61 +124,74 @@ export default function EditRaffle() {
   if (loading) return <p style={styles.stateText}>Carregando dados da rifa...</p>;
 
   const fields = [
-    { label: "Nome da rifa",         name: "name",         type: "text" },
-    { label: "Prêmio",               name: "prize",        type: "text" },
+    { label: "Nome da rifa",          name: "name",         type: "text"   },
+    { label: "Prêmio",                name: "prize",        type: "text"   },
     { label: "Preço por número (R$)", name: "ticketPrice",  type: "number" },
-    { label: "Total de números",     name: "totalTickets", type: "number" },
-    { label: "Data do sorteio",      name: "drawDate",     type: "date" },
-    { label: "URL da imagem",        name: "imageUrl",     type: "text" },
-    { label: "Descrição",            name: "description",  type: "text" },
+    { label: "Total de números",      name: "totalTickets", type: "number" },
+    { label: "Data do sorteio",       name: "drawDate",     type: "date"   },
+    { label: "URL da imagem",         name: "imageUrl",     type: "text"   },
+    { label: "Descrição",             name: "description",  type: "text"   },
   ];
 
-  // Filtra apenas os tickets que foram vendidos e não estão cancelados
   const soldTickets = tickets.filter(t => t.userId !== null && t.validation === 0);
   const totalSold = soldTickets.length;
-
-  const totalRevenue =
-    totalSold * Number(form.ticketPrice || 0);
-
+  const totalRevenue = totalSold * Number(form.ticketPrice || 0);
   const salesPercentage =
     Number(form.totalTickets) > 0
       ? ((totalSold / Number(form.totalTickets)) * 100).toFixed(1)
       : 0;
+
   return (
     <main style={styles.container}>
       <h1 style={styles.title}>Detalhes da sua rifa</h1>
-        <div style={styles.statsContainer}>
-          <div style={styles.statCard}>
-            <span style={styles.statValue}>
-              {totalSold}
-            </span>
-            <span style={styles.statLabel}>
-              Números vendidos
-            </span>
-          </div>
 
-          <div style={styles.statCard}>
-            <span style={styles.statValue}>
-              {salesPercentage}%
-            </span>
-            <span style={styles.statLabel}>
-              Vendido
-            </span>
-          </div>
-
-          <div style={styles.statCard}>
-            <span style={styles.statValue}>
-              {totalRevenue.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
+      {/* Banner de sorteio realizado ou botão de realizar sorteio */}
+      {form.drawnAt ? (
+        <div style={styles.drawnBanner}>
+          <div style={styles.drawnBannerIcon}></div>
+          <div>
+            <p style={styles.drawnBannerTitle}>Sorteio realizado</p>
+            <p style={styles.drawnBannerDate}>
+              {new Date(form.drawnAt).toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
               })}
-            </span>
-            <span style={styles.statLabel}>
-              Arrecadado
-            </span>
+            </p>
           </div>
         </div>
-        
+      ) : (
+        <div style={styles.drawSection}>
+          <p style={styles.drawHint}>A rifa ainda não foi sorteada.</p>
+          <button onClick={handleDraw} style={styles.drawButton}>
+             Realizar Sorteio
+          </button>
+        </div>
+      )}
+
+      <div style={styles.statsContainer}>
+        <div style={styles.statCard}>
+          <span style={styles.statValue}>{totalSold}</span>
+          <span style={styles.statLabel}>Números vendidos</span>
+        </div>
+
+        <div style={styles.statCard}>
+          <span style={styles.statValue}>{salesPercentage}%</span>
+          <span style={styles.statLabel}>Vendido</span>
+        </div>
+
+        <div style={styles.statCard}>
+          <span style={styles.statValue}>
+            {totalRevenue.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+          </span>
+          <span style={styles.statLabel}>Arrecadado</span>
+        </div>
+      </div>
 
       {error && <p style={styles.errorText}>{error}</p>}
 
@@ -201,10 +219,7 @@ export default function EditRaffle() {
           >
             {saving ? "Salvando..." : "Salvar alterações"}
           </button>
-          <button
-            onClick={() => navigate(`/rifa/${id}`)}
-            style={styles.cancelButton}
-          >
+          <button onClick={() => navigate(`/rifa/${id}`)} style={styles.cancelButton}>
             Voltar
           </button>
         </div>
@@ -233,15 +248,12 @@ export default function EditRaffle() {
                       cursor: "pointer",
                     }}
                     onClick={() =>
-                      setExpandedTicket(
-                        expandedTicket === ticket.id ? null : ticket.id
-                      )
+                      setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)
                     }
                   >
                     <span>
                       Número: <strong>{ticket.number}</strong> (ID: {ticket.id})
                     </span>
-
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -252,32 +264,32 @@ export default function EditRaffle() {
                       Cancelar Ticket
                     </button>
                   </div>
+
                   <button
                     onClick={() => {
                       const user = users[ticket.userId];
-
                       const message = `Olá ${user?.name || ""}!
 
-                  Estamos entrando em contato sobre a sua compra da rifa.
+Estamos entrando em contato sobre a sua compra da rifa.
 
-                   Número: ${ticket.number}
-                   Rifa: ${form.name}
-                   Data da compra: ${
+ Número: ${ticket.number}
+ Rifa: ${form.name}
+ Data da compra: ${
                         ticket.purchasedAt
                           ? new Date(ticket.purchasedAt).toLocaleString("pt-BR")
                           : "-"
                       }
 
-                  Ainda não recebemos o comprovante de sua compra, poderia enviá-lo
-                  para esse número? Caso não tivermos resposta em 24 horas ou até 1 hora
-                  antes da rifa, sua compra será cancelada!`;
-
+Ainda não recebemos o comprovante de sua compra, poderia enviá-lo
+para esse número? Caso não tivermos resposta em 24 horas ou até 1 hora
+antes da rifa, sua compra será cancelada!`;
                       navigator.clipboard.writeText(message);
-
                       alert("Mensagem copiada!");
                     }}
                     style={styles.copyButton}
-                  > Copiar mensagem para perguntar sobre a compra!</button>
+                  >
+                    Copiar mensagem para perguntar sobre a compra!
+                  </button>
 
                   {expandedTicket === ticket.id && (
                     <div
@@ -293,7 +305,6 @@ export default function EditRaffle() {
                         <strong>Comprador:</strong>{" "}
                         {users[ticket.userId]?.name || "Não encontrado"}
                       </p>
-
                       <p>
                         <strong>Telefone:</strong>{" "}
                         {users[ticket.userId]?.phone ||
@@ -301,7 +312,6 @@ export default function EditRaffle() {
                           users[ticket.userId]?.cellphone ||
                           "-"}
                       </p>
-
                       <p>
                         <strong>Data da compra:</strong>{" "}
                         {ticket.purchasedAt
@@ -319,6 +329,7 @@ export default function EditRaffle() {
     </main>
   );
 }
+
 const styles = {
   container: {
     padding: "40px 20px",
@@ -340,6 +351,114 @@ const styles = {
     fontSize: "1.4rem",
     marginBottom: "15px",
   },
+
+  /* ---------- SORTEIO ---------- */
+
+  drawSection: {
+    maxWidth: "500px",
+    margin: "0 auto 24px",
+    background: "#fff",
+    borderRadius: "12px",
+    padding: "20px 24px",
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.07)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "16px",
+    flexWrap: "wrap",
+    boxSizing: "border-box",
+  },
+
+  drawHint: {
+    margin: 0,
+    color: "#64748b",
+    fontSize: "0.9rem",
+  },
+
+  drawButton: {
+    padding: "10px 20px",
+    background: "#2563eb",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    fontSize: "0.95rem",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  },
+
+  drawnBanner: {
+    maxWidth: "500px",
+    margin: "0 auto 24px",
+    background: "#f0fdf4",
+    border: "1px solid #86efac",
+    borderRadius: "12px",
+    padding: "16px 24px",
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+    boxSizing: "border-box",
+  },
+
+  drawnBannerIcon: {
+    fontSize: "2rem",
+    lineHeight: 1,
+    flexShrink: 0,
+  },
+
+  drawnBannerTitle: {
+    margin: 0,
+    fontWeight: "700",
+    color: "#15803d",
+    fontSize: "1rem",
+  },
+
+  drawnBannerDate: {
+    margin: "2px 0 0",
+    color: "#16a34a",
+    fontSize: "0.85rem",
+  },
+
+  /* ---------- ESTATÍSTICAS ---------- */
+
+  statsContainer: {
+    maxWidth: "500px",
+    margin: "0 auto 24px",
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "12px",
+  },
+
+  statCard: {
+    flex: "1 1 140px",
+    minWidth: "140px",
+    background: "#fff",
+    borderRadius: "12px",
+    padding: "16px",
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.07)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+  },
+
+  statValue: {
+    fontSize: "1.2rem",
+    fontWeight: "bold",
+    color: "#2563eb",
+    textAlign: "center",
+    wordBreak: "break-word",
+  },
+
+  statLabel: {
+    marginTop: "4px",
+    fontSize: "0.8rem",
+    color: "#64748b",
+    textAlign: "center",
+  },
+
+  /* ---------- FORMULÁRIO ---------- */
 
   form: {
     maxWidth: "500px",
@@ -417,45 +536,6 @@ const styles = {
     textAlign: "center",
     padding: "40px",
     color: "#64748b",
-  },
-
-  /* ---------- ESTATÍSTICAS ---------- */
-
-  statsContainer: {
-    maxWidth: "500px",
-    margin: "0 auto 24px",
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "12px",
-  },
-
-  statCard: {
-    flex: "1 1 140px",
-    minWidth: "140px",
-    background: "#fff",
-    borderRadius: "12px",
-    padding: "16px",
-    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.07)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    boxSizing: "border-box",
-  },
-
-  statValue: {
-    fontSize: "1.2rem",
-    fontWeight: "bold",
-    color: "#2563eb",
-    textAlign: "center",
-    wordBreak: "break-word",
-  },
-
-  statLabel: {
-    marginTop: "4px",
-    fontSize: "0.8rem",
-    color: "#64748b",
-    textAlign: "center",
   },
 
   /* ---------- TICKETS ---------- */
