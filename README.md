@@ -1,10 +1,4 @@
 
-# Login e senha para acessar a página home:
-
-Login: admin@rifas.com
-
-Senha: 123456
-
 Necessário instalar a biblioteca lucide-react no npm para rodar o si# 🎯 Rifas Fáceis
 
 Plataforma completa para criação, gerenciamento e participação em rifas online. O projeto é dividido em frontend (React + Vite) e backend (Node.js + Express + Prisma + PostgreSQL).
