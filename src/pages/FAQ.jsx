@@ -10,20 +10,36 @@ function FAQ() {
   // FAQ data array containing customer support queries and answers
   const faqItems = [
     {
-      question: "Como criar uma rifa?",
-      answer: "Clique no botão de criar rifa, preencha os dados e confirme.",
+      question: "Como posso criar rifas no site?",
+      answer: "Entre em contato conosco via email para te darmos acesso a aba de criação das rifas!",
+    },
+    {
+      question: "Como faço para validar minha rifa?",
+      answer: "Envie um comprovante de pagamento via pix no whatsapp de telefone (35)9842-47532, após isso seu número será validado!",
     },
     {
       question: "Como comprar um número?",
-      answer: "Selecione a rifa desejada e escolha um número disponível.",
+      answer: "Selecione a rifa desejada e escolha um número disponível, após selecionar todos os números desejados vá para o carrinho e encerre sua compra, ao final, envie o comprovante de pagamento para o telefone (35)98424-7532.",
+    },
+    {
+      question: "Esqueci de mandar o comprovante, e agora?",
+      answer: "Caso você tenha esquecido de mandar o comprovante, entraremos em contato solicitando-o, se ele não for enviado em até 24 horas, sua compra será cancelada.",
     },
     {
       question: "Como funciona o sorteio?",
-      answer: "O sorteio é realizado automaticamente após todos os números serem vendidos.",
+      answer: "O sorteio é realizado pelo dono da rifa na data prevista no site. Apresentamos em nosso site uma função de sorteio, que escolhe randomicamente um dos tickets comprados como vencedor!",
     },
     {
       question: "Posso cancelar minha participação?",
-      answer: "Depende das regras da rifa. Entre em contato com o organizador.",
+      answer: "Caso tenha desistido da compra de seu número, envie uma requisição em nosso whatsapp. Cancelamentos podem ser solicitados até 8 horas antes do sorteio da rifa.",
+    },
+    {
+      question: "Como faço para editar meus dados?",
+      answer: "Vá até a aba 'meus dados' e clique na opção editar para atualizar alguma informação de cadastro.",
+    },
+    {
+      question: "É seguro o site?",
+      answer: "Garantimos que nenhum usuário terá acesso as rifas criadas por uma instituição, apenas os administradores do site tem acesso para validação do pagamento.",
     },
   ];
 
@@ -61,7 +77,8 @@ function FAQ() {
       <div style={styles.contactContainer}>
         <h2 style={styles.contactTitle}>Precisa de mais ajuda?</h2>
         <p style={styles.contactText}>Entre em contato conosco:</p>
-        <p style={styles.phoneText}>Automóvel 📞 (16) 99999-9999</p>
+        <p style={styles.phoneText}>Rifa Facil 📞 (35) 98424-7532</p>
+        <p style={styles.EmailText}>Email: rifafacil@gmail.com </p>
       </div>
     </div>
   );
@@ -85,6 +102,7 @@ const styles = {
     flexDirection: "column",
     gap: "15px",
   },
+  
   faqItem: {
     border: "1px solid #e2e8f0",
     borderRadius: "12px",
@@ -132,7 +150,11 @@ const styles = {
   },
   phoneText: {
     fontSize: "1.2rem",
-    fontWeight: "bold",
+    color: "#2563EB",
+    margin: 0,
+  },
+  EmailText: {
+    fontSize: "1.2rem",
     color: "#2563EB",
     margin: 0,
   },
