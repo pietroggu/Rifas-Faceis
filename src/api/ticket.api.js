@@ -21,6 +21,20 @@ export const ticketApi = {
   },
 
   /**
+   * Cancel a ticket (Soft delete).
+   * @param {string|number} ticketId
+   * @returns {Promise<Object>} Updated ticket
+   */
+  cancel: async (ticketId) => {
+    try {
+      const response = await httpClient.patch(`/tickets/${ticketId}/cancel`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to cancel ticket");
+    }
+  },
+
+  /**
    * Fetch all tickets (Administrative use).
    * @returns {Promise<Array>} Collection of all tickets
    */

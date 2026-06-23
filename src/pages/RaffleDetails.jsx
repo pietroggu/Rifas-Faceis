@@ -34,12 +34,14 @@ export default function RaffleDetails() {
 
         const generatedGrid = Array.from({ length: totalTickets }, (_, index) => {
           const currentNumber = index + 1;
-          const isSold = soldTickets.some((ticket) => ticket.number === currentNumber);
+          const ticket = soldTickets.find((t) => t.number === currentNumber);
 
           return {
             id: currentNumber,
             number: currentNumber,
-            isSold,
+            isSold: !!ticket,
+            // Adicionamos o estado de validação diretamente ao objeto da grade
+            validation: ticket ? (ticket.validation || 0) : 0,
           };
         });
 
@@ -86,6 +88,26 @@ export default function RaffleDetails() {
         <h1>{raffle.name}</h1>
         {raffle.description && <p style={styles.description}>{raffle.description}</p>}
       </header>
+      {user?.role === 1 && (
+        <div style={{ maxWidth: "500px", margin: "0 auto 16px", textAlign: "center" }}>
+          <button
+            onClick={() => navigate(`/editar-rifa/${id}`)}
+            style={{
+              padding: "8px 18px",
+              background: "#0b9bf5",
+              color: "#fff",
+              border: "none",
+              alignItems: "center",
+              borderRadius: "8px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              fontSize: "0.9rem",
+            }}
+          >
+            ✏️ Editar rifa
+          </button>
+        </div>
+      )}
 
       {raffle.imageUrl && (
         <div style={styles.imageWrapper}>
@@ -131,7 +153,10 @@ export default function RaffleDetails() {
             <NumberCard
               key={num.id}
               number={num.number}
-              sold={num.isSold || isInCart} // Fica desativado visualmente se já foi vendido ou se está no carrinho
+              // O ticket fica 'sold' (cinza) apenas se não estiver cancelado (validation === 0)
+              sold={(num.isSold && num.validation === 0) || isInCart}
+              // Passamos explicitamente o estado de cancelado para o card
+              isCancelled={num.validation === 1}
               onClick={handleNumberClick}
             />
           );
@@ -159,7 +184,7 @@ const styles = {
   metaDetails: { margin: "20px auto", maxWidth: "500px", padding: "15px", background: "#fff", borderRadius: "8px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", textAlign: "left" },
   stateText: { textAlign: "center", padding: "40px", fontSize: "1.1rem", color: "#64748b" },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, 50px)", gap: "10px", justifyContent: "center", marginTop: "30px" },
- successAlert: {
+  successAlert: {
     display: "flex",
     justifyContent: "space-between", // Joga o texto para a esquerda e o X para a direita
     alignItems: "center",            // Alinha verticalmente no meio

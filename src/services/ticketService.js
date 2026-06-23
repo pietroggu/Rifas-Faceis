@@ -21,6 +21,14 @@ class TicketService {
   }
 
   /**
+   * Cancels a ticket.
+   * @param {string|number} id - Ticket identifier
+   */
+  static async cancelTicket(id) {
+    return await ticketApi.cancel(id);
+  }
+
+  /**
    * Fetches all tickets (Administrative use).
    * @returns {Promise<Array>} Collection of all tickets
    */
@@ -65,16 +73,21 @@ class TicketService {
    * @private
    */
   static _enrichTicketData(ticket) {
-    const hasBeenPaid = ticket.userId !== null && ticket.purchasedAt !== null;
+    const isCancelled = ticket.validation === 1;
+    const hasBeenPaid = !isCancelled && ticket.userId !== null && ticket.purchasedAt !== null;
+
+    let label = "Disponível / Aguardando";
+    if (isCancelled) label = "Cancelado";
+    else if (hasBeenPaid) label = "Confirmado";
 
     return {
       ...ticket,
-      statusLabel: hasBeenPaid ? "Confirmado" : "Disponível / Aguardando",
+      statusLabel: label,
       isPaid: hasBeenPaid,
+      isCancelled: isCancelled,
       purchaseDate: ticket.purchasedAt 
         ? new Date(ticket.purchasedAt).toLocaleDateString("pt-BR")
         : "",
-      // Extract raffle name for display if available
       raffleName: ticket.raffle?.name || ticket.raffleName || "N/A"
     };
   }

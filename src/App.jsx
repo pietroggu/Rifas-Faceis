@@ -13,6 +13,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Profile from "./pages/Profile";
 import FAQ from "./pages/FAQ";
 import MyRaffles from "./pages/MyRaffles";
+import EditRaffle from "./pages/EditRaffle";
 import Cart from "./pages/Cart"; 
 
 /**
@@ -46,6 +47,7 @@ function App() {
           <Route element={<AdminRoute />}>
             <Route element={<Layout />}>
               <Route path="/adminDashboard" element={<AdminDashboard/>} />
+              <Route path="/editar-rifa/:id" element={<EditRaffle />} />
             </Route>
           </Route>
         </Routes>
