@@ -17,6 +17,10 @@ function AdminDashboard() {
   const [raffles, setRaffles] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Form state directly mapped to the Prisma schema properties to prevent mismatch errors
   const [newRaffle, setNewRaffle] = useState({
@@ -30,10 +34,40 @@ function AdminDashboard() {
     imageUrl: "", // Base64 image payload container
   });
 
-  useEffect(() => {
-    loadRaffles();
-  }, []);
+  function getErrorMessage(error) {
+    return (
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message ||
+      "Ocorreu um erro inesperado"
+    );
+  }
 
+  function validate() {
+    const newErrors = {};
+
+    if (!newRaffle.name.trim()) {
+      newErrors.name = "Nome da rifa é obrigatório";
+    }
+
+    if (!newRaffle.prize.trim()) {
+      newErrors.prize = "Prêmio é obrigatório";
+    }
+
+    if (!newRaffle.ticketPrice || Number(newRaffle.ticketPrice) <= 0) {
+      newErrors.ticketPrice = "Preço deve ser maior que zero";
+    }
+
+    if (!newRaffle.totalTickets || Number(newRaffle.totalTickets) <= 0) {
+      newErrors.totalTickets = "Quantidade deve ser maior que zero";
+    }
+
+    if (!newRaffle.drawDate) {
+      newErrors.drawDate = "Data do sorteio é obrigatória";
+    }
+
+    return newErrors;
+  }
   /**
    * Asynchronously fetches all registered raffles from the service layer to sync the UI grid.
    */
@@ -60,6 +94,11 @@ function AdminDashboard() {
     }
   }
 
+    useEffect(() => {
+      loadRaffles();
+    }, []);
+
+
   /**
    * Intercepts input mutations and applies strict numeric sanitation formatting rules.
    * Prevents non-numeric entries or invalid data patterns from updating state.
@@ -67,6 +106,17 @@ function AdminDashboard() {
    */
   function handleInputChange(e) {
     const { name, value } = e.target;
+
+    setGeneralError("");
+    setSuccessMessage("");
+
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined,
+      }));
+    }
+
     let sanitizedValue = value;
 
     if (name === "totalTickets") {
@@ -95,7 +145,9 @@ function AdminDashboard() {
 
     // Security & Payload Threshold Check: Reject image updates heavier than 2MB
     if (file.size > 2 * 1024 * 1024) {
-      alert("A imagem é muito grande! Escolha uma foto de no máximo 2MB.");
+      setGeneralError(
+        "A imagem é muito grande. Escolha uma foto de até 2MB."
+      );
       return;
     }
 
@@ -116,17 +168,25 @@ function AdminDashboard() {
 
     const { name, description, prize, category, ticketPrice, totalTickets, drawDate, imageUrl } = newRaffle;
 
-    // Strict validation ensuring all required parameters according to Prisma exist
-    if (!name || !prize || !ticketPrice || !totalTickets || !drawDate) {
-      alert("Preencha todos os campos obrigatórios (Nome, Prêmio, Preço, Total de Bilhetes e Data)!");
+    setErrors({});
+    setGeneralError("");
+
+    const validationErrors = validate();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
 
     // Safety guard verifying an active session context is available
     if (!user || !user.id) {
-      alert("Erro: Você precisa estar autenticado para criar uma rifa.");
+      setGeneralError(
+        "Você precisa estar autenticado para criar uma rifa."
+      );
       return;
     }
+
+    setIsCreating(true);
 
     try {
       // Constructs the precise structural model layout expected by your backend service
@@ -143,7 +203,7 @@ function AdminDashboard() {
       };
 
       await RaffleService.createRaffle(backendPayload);
-      alert("Rifa criada com sucesso!");
+      setSuccessMessage("Rifa criada com sucesso!");
       
       // Clear all inputs and restore creation panel defaults
       setNewRaffle({
@@ -157,9 +217,12 @@ function AdminDashboard() {
         imageUrl: "",
       });
       setShowForm(false);
-      loadRaffles();
+      await loadRaffles();
     } catch (error) {
-      alert(error.message || "Erro ao criar rifa.");
+      setGeneralError(getErrorMessage(error));
+    }
+    finally {
+      setIsCreating(false);
     }
   }
 
@@ -167,10 +230,25 @@ function AdminDashboard() {
     <div style={styles.container}>
       <h1 style={styles.mainTitle}>Painel Administrativo</h1>
 
+      {generalError ? (
+        <div style={styles.errorBox}>
+          {generalError}
+        </div>
+      ) : successMessage ? (
+        <div style={styles.successBox}>
+          {successMessage}
+        </div>
+      ) : null}
+
       {/* Accordion view toggler button */}
       <button 
         style={styles.toggleButton} 
-        onClick={() => setShowForm((prev) => !prev)}
+        onClick={() => {
+          setGeneralError("");
+          setSuccessMessage("");
+          setShowForm((prev) => !prev);
+        }}
+        disabled={loading || isCreating}
       >
         {showForm ? "Fechar Formulário" : "Criar Nova Rifa"}
       </button>
@@ -217,6 +295,12 @@ function AdminDashboard() {
             onChange={handleFileChange}
           />
 
+          {errors.image && (
+            <span style={styles.fieldError}>
+              {errors.image}
+            </span>
+          )}
+
           <input
             style={styles.input}
             type="text"
@@ -225,6 +309,13 @@ function AdminDashboard() {
             value={newRaffle.name}
             onChange={handleInputChange}
           />
+
+          {errors.name && (
+            <span style={styles.fieldError}>
+              {errors.name}
+            </span>
+          )}
+
           <input
             style={styles.input}
             type="text"
@@ -233,6 +324,13 @@ function AdminDashboard() {
             value={newRaffle.prize}
             onChange={handleInputChange}
           />
+
+          {errors.prize && (
+            <span style={styles.fieldError}>
+              {errors.prize}
+            </span>
+          )}
+
           <input
             style={styles.input}
             type="text" // Input field type changed to text to fully drive explicit regex filtration logic
@@ -241,6 +339,13 @@ function AdminDashboard() {
             value={newRaffle.ticketPrice}
             onChange={handleInputChange}
           />
+
+          {errors.ticketPrice && (
+            <span style={styles.fieldError}>
+              {errors.ticketPrice}
+            </span>
+          )} 
+
           <input
             style={styles.input}
             type="text" // Input field type changed to text to fully drive explicit regex filtration logic
@@ -249,6 +354,13 @@ function AdminDashboard() {
             value={newRaffle.totalTickets}
             onChange={handleInputChange}
           />
+
+          {errors.totalTickets && (
+            <span style={styles.fieldError}>
+              {errors.totalTickets}
+            </span>
+          )}
+
           <input
             style={styles.input}
             type="date"
@@ -256,6 +368,13 @@ function AdminDashboard() {
             value={newRaffle.drawDate}
             onChange={handleInputChange}
           />
+
+          {errors.drawDate && (
+            <span style={styles.fieldError}>
+              {errors.drawDate}
+            </span>
+          )}
+
           <input
             style={styles.input}
             type="text"
@@ -272,8 +391,16 @@ function AdminDashboard() {
             onChange={handleInputChange}
           />
           
-          <button style={styles.submitButton} type="submit">
-            Confirmar Criação
+          <button
+            style={{
+              ...styles.submitButton,
+              opacity: isCreating ? 0.7 : 1,
+              cursor: isCreating ? "not-allowed" : "pointer",
+            }}
+            type="submit"
+            disabled={isCreating}
+          >
+            {isCreating ? "Criando..." : "Confirmar Criação"}
           </button>
         </form>
       )}
@@ -282,7 +409,16 @@ function AdminDashboard() {
       <div style={styles.listSection}>
         <h2 style={styles.sectionTitle}>Rifas Ativas no Sistema</h2>
         {loading ? (
-          <p>Carregando dados das rifas...</p>
+          <div style={styles.grid}>
+            {[...Array(6)].map((_, index) => (
+              <div key={index} style={styles.skeletonCard}>
+                <div style={styles.skeletonImage}></div>
+                <div style={styles.skeletonLine}></div>
+                <div style={styles.skeletonLineSmall}></div>
+                <div style={styles.skeletonLine}></div>
+              </div>
+            ))}
+          </div>
         ) : raffles.length === 0 ? (
           <p>Nenhuma rifa cadastrada ainda.</p>
         ) : (
@@ -424,6 +560,69 @@ const styles = {
     flex: "1 1 280px",
     maxWidth: "320px",
     width: "100%",
+  },
+
+  skeletonCard: {
+    background: "#ffffff",
+    borderRadius: "12px",
+    padding: "16px",
+    width: "320px",
+    border: "1px solid #e2e8f0",
+  },
+
+  skeletonImage: {
+    width: "100%",
+    height: "180px",
+    background: "#e5e7eb",
+    borderRadius: "8px",
+    marginBottom: "12px",
+    animation: "pulse 1.5s ease-in-out infinite",
+  },
+
+  skeletonLine: {
+    height: "16px",
+    background: "#e5e7eb",
+    borderRadius: "4px",
+    marginBottom: "10px",
+    animation: "pulse 1.5s ease-in-out infinite",
+  },
+
+  skeletonLineSmall: {
+    height: "12px",
+    width: "60%",
+    background: "#e5e7eb",
+    borderRadius: "4px",
+    marginBottom: "10px",
+    animation: "pulse 1.5s ease-in-out infinite",
+  },
+
+  errorBox: {
+    background: "#ffe6e6",
+    color: "#cc0000",
+    padding: "10px",
+    borderRadius: "5px",
+    margin: "0 auto 20px auto",
+    fontSize: "14px",
+    width: "100%",
+    maxWidth: "450px",
+  },
+
+  successBox: {
+    background: "#DCFCE7",
+    color: "#166534",
+    padding: "10px",
+    borderRadius: "5px",
+    margin: "0 auto 20px auto",
+    fontSize: "14px",
+    width: "100%",
+    maxWidth: "450px",
+  },
+
+  fieldError: {
+    color: "#cc0000",
+    fontSize: "13px",
+    marginBottom: "6px",
+    marginTop: "-2px",
   },
 };
 

@@ -117,7 +117,39 @@ function MyRaffles() {
     return userWon ? "won" : "lost";
   }
 
-  if (loading) return <p style={styles.center}>Carregando suas rifas...</p>;
+  if (loading) {
+    return (
+      <div style={styles.container}>
+        <h1 style={styles.title}>Minhas Rifas</h1>
+
+        <div style={styles.list}>
+          {[...Array(3)].map((_, index) => (
+            <div key={index} style={styles.skeletonCard}>
+              <div style={styles.skeletonHeader}></div>
+
+              <div style={styles.skeletonImage}></div>
+
+              <div style={styles.skeletonLine}></div>
+              <div style={styles.skeletonLineSmall}></div>
+
+              <div style={styles.skeletonBox}></div>
+
+              <div style={styles.skeletonNumbers}>
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} style={styles.skeletonBadge}></div>
+                ))}
+              </div>
+
+              <div style={styles.skeletonLine}></div>
+              <div style={styles.skeletonLineSmall}></div>
+
+              <div style={styles.skeletonButton}></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (error) return <p style={styles.errorText}>Erro: {error}</p>;
 
   return (
@@ -499,6 +531,82 @@ const styles = {
     cursor: "pointer",
     fontWeight: "bold",
     fontSize: "0.95rem",
+  },
+
+  skeletonCard: {
+    padding: "24px",
+    border: "1px solid #e2e8f0",
+    background: "#ffffff",
+    borderRadius: "12px",
+    maxWidth: "600px",
+  },
+
+  skeletonHeader: {
+    height: "28px",
+    width: "50%",
+    background: "#e5e7eb",
+    borderRadius: "6px",
+    marginBottom: "16px",
+    animation: "pulse 1.5s ease-in-out infinite",
+  },
+
+  skeletonImage: {
+    width: "100%",
+    height: "200px",
+    background: "#e5e7eb",
+    borderRadius: "8px",
+    marginBottom: "16px",
+    animation: "pulse 1.5s ease-in-out infinite",
+  },
+
+  skeletonLine: {
+    height: "16px",
+    background: "#e5e7eb",
+    borderRadius: "4px",
+    marginBottom: "10px",
+    animation: "pulse 1.5s ease-in-out infinite",
+  },
+
+  skeletonLineSmall: {
+    height: "14px",
+    width: "60%",
+    background: "#e5e7eb",
+    borderRadius: "4px",
+    marginBottom: "10px",
+    animation: "pulse 1.5s ease-in-out infinite",
+  },
+
+  skeletonBox: {
+    height: "70px",
+    background: "#e5e7eb",
+    borderRadius: "8px",
+    margin: "16px 0",
+    animation: "pulse 1.5s ease-in-out infinite",
+  },
+
+  skeletonNumbers: {
+    display: "flex",
+    gap: "8px",
+    flexWrap: "wrap",
+    marginBottom: "16px",
+    animation: "pulse 1.5s ease-in-out infinite",
+  },
+
+  skeletonBadge: {
+    width: "50px",
+    height: "28px",
+    background: "#e5e7eb",
+    borderRadius: "6px",
+    animation: "pulse 1.5s ease-in-out infinite",
+  },
+
+  skeletonButton: {
+    width: "100%",
+    height: "44px",
+    background: "#e5e7eb",
+    borderRadius: "8px",
+    marginTop: "16px",
+    animation: "pulse 1.5s ease-in-out infinite",
   },
 };
 

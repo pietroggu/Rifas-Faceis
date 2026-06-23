@@ -27,7 +27,10 @@ function Profile() {
   
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false); // Manages loading feedback and restricts actions while updating
-  
+  const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -54,17 +57,72 @@ function Profile() {
     }
   }, [contextUser]);
 
+  function getErrorMessage(error) {
+      return (
+          error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          error?.message ||
+          "Ocorreu um erro inesperado"
+      );
+  }
+  
   /**
    * Maps text field mutations seamlessly to local component state fields.
    */
   function handleInputChange(e) {
     const { name, value } = e.target;
-    
-    // Intercept phone entry to apply best-practice dynamic formatting mask
-    const finalValue = name === "phone" ? formatBrazilianPhone(value) : value;
-    
-    setUser((prev) => ({ ...prev, [name]: finalValue }));
+
+    setSuccessMessage("");
+    setGeneralError("");
+
+    const finalValue =
+      name === "phone"
+        ? formatBrazilianPhone(value)
+        : value;
+
+    setUser((prev) => ({
+      ...prev,
+      [name]: finalValue,
+    }));
+
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: undefined,
+      }));
+    }
   }
+
+  function validate() {
+    const newErrors = {};
+
+    const trimmedName = user.name.trim();
+
+    if (!trimmedName) {
+      newErrors.name = "Nome é obrigatório";
+    } else if (trimmedName.length < 2) {
+      newErrors.name = "Nome muito curto";
+    }
+
+    const phoneDigits = user.phone.replace(/\D/g, "");
+
+    if (!phoneDigits) {
+      newErrors.phone = "Telefone é obrigatório";
+    } else if (phoneDigits.length !== 11) {
+      newErrors.phone = "Telefone inválido";
+    }
+
+    if (
+      user.password &&
+      user.password.length < 6
+    ) {
+      newErrors.password = "Mínimo 6 caracteres";
+    }
+
+    return newErrors;
+  }
+
+
 
   /**
    * Handles local file selection, validates constraints, and encodes binary data to a Base64 string.
@@ -75,11 +133,16 @@ function Profile() {
    * Validates state data consistency rules before dispatching record updates upstream to API and context.
    */
   async function handleSaveChanges() {
-    // Basic verification guard for essential account details
-    if (!user.name.trim() || !user.phone.trim()) {
-      alert("Por favor, preencha todos os campos obrigatórios (Nome e Telefone).");
+    const validationErrors = validate();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
+
+    setErrors({});
+    setGeneralError("");
+    setSuccessMessage("");
 
     setIsSaving(true);
 
@@ -87,7 +150,7 @@ function Profile() {
       // Assemble standard structural data payload according to updated Prisma definitions
       const payload = {
         name: user.name.trim(),
-        phone: user.phone.trim(), 
+        phone: user.phone.replace(/\D/g, ""),
         address: user.address.trim(),
         photo: user.photo, // Passes the Base64 string smoothly over standard JSON
       };
@@ -109,17 +172,53 @@ function Profile() {
       // 2. Refresh global reactive application memory instantly
       updateUser(updatedData);
 
-      alert("Perfil atualizado com sucesso!");
+      setUser((prev) => ({
+        ...prev,
+        password: "",
+      }));
+
+      setErrors({});
+      setGeneralError("");
+      setSuccessMessage("Perfil atualizado com sucesso!");
       setIsEditing(false);
+
     } catch (error) {
-      console.error("Profile update process failure:", error);
-      alert(error.message || "Erro ao salvar os dados.");
+      setGeneralError(getErrorMessage(error));
     } finally {
       setIsSaving(false);
     }
   }
 
-  if (loading) return <div style={styles.container}><h3>Carregando dados do usuário...</h3></div>;
+  function handleCancelEdit() {
+    setUser({
+      name: contextUser.name || "",
+      email: contextUser.email || "",
+      phone: contextUser.phone
+        ? formatBrazilianPhone(contextUser.phone)
+        : "",
+      address: contextUser.address || "",
+      password: "",
+      photo:
+        contextUser.photo ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          contextUser.name || "User"
+        )}`,
+    });
+
+    setErrors({});
+    setGeneralError("");
+    setSuccessMessage("");
+    setIsEditing(false);
+  }
+
+  if (loading) {
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.spinner}></div>
+        <p>Carregando dados do usuário...</p>
+      </div>
+    );
+  }
   if (!contextUser) return <div style={styles.container}><h3 style={{color: "red"}}>Acesso negado. Por favor, faça login.</h3></div>;
 
   return (
@@ -129,11 +228,21 @@ function Profile() {
       <div style={styles.cardForm}>
         <h2 style={styles.sectionTitle}>Informações Pessoais</h2>
 
+        {generalError ? (
+          <div style={styles.errorBox}>
+            {generalError}
+          </div>
+        ) : successMessage ? (
+          <div style={styles.successBox}>
+            {successMessage}
+          </div>
+        ) : null}
+
         {/* Interactive Interactive Avatar Container */}
         <ImageUploader 
           value={user.photo} 
           onChange={(newValue) => setUser((prev) => ({ ...prev, photo: newValue }))}
-          disabled={!isEditing}
+          disabled={!isEditing || isSaving}
         />
         {/* Completely hidden native file input controlled via React ref bridges */}
 
@@ -147,6 +256,12 @@ function Profile() {
             onChange={handleInputChange}
             disabled={!isEditing || isSaving}
           />
+
+          {errors.name && (
+            <span style={styles.fieldError}>
+              {errors.name}
+            </span>
+          )}
 
           <label style={styles.label}>E-mail da Conta (Não alterável)</label>
           <input
@@ -163,11 +278,17 @@ function Profile() {
             type="tel"
             name="phone"
             placeholder="(11) 99999-9999"
-            maxLength="15" 
+            maxLength={15} 
             value={user.phone}
             onChange={handleInputChange}
             disabled={!isEditing || isSaving}
           />
+
+          {errors.phone && (
+            <span style={styles.fieldError}>
+              {errors.phone}
+            </span>
+          )}
 
           <label style={styles.label}>Endereço Residencial</label>
           <input
@@ -189,18 +310,51 @@ function Profile() {
             onChange={handleInputChange}
             disabled={!isEditing || isSaving}
           />
+
+          {errors.password && (
+            <span style={styles.fieldError}>
+              {errors.password}
+            </span>
+          )}
         </div>
 
         {isEditing ? (
-          <button 
-            style={{ ...styles.saveButton, opacity: isSaving ? 0.7 : 1, cursor: isSaving ? "not-allowed" : "pointer" }} 
-            onClick={handleSaveChanges}
-            disabled={isSaving}
-          >
-            {isSaving ? "Salvando..." : "Salvar Dados"}
-          </button>
+          <div style={styles.buttonGroup}>
+            <button
+              type="button"
+              style={{
+                ...styles.saveButton,
+                opacity: isSaving ? 0.7 : 1,
+                cursor: isSaving ? "not-allowed" : "pointer",
+              }}
+              onClick={handleSaveChanges}
+              disabled={isSaving}
+            >
+              {isSaving ? "Salvando..." : "Salvar Dados"}
+            </button>
+
+            <button
+              type="button"
+              style={{
+                ...styles.cancelButton,
+                opacity: isSaving ? 0.7 : 1,
+                cursor: isSaving ? "not-allowed" : "pointer",
+              }}
+              onClick={handleCancelEdit}
+              disabled={isSaving}
+            >
+              Cancelar
+            </button>
+          </div>
         ) : (
-          <button style={styles.editButton} onClick={() => setIsEditing(true)}>
+          <button
+            style={styles.editButton}
+            onClick={() => {
+              setGeneralError("");
+              setSuccessMessage("");
+              setIsEditing(true);
+            }}
+          >
             Editar Dados
           </button>
         )}
@@ -238,34 +392,6 @@ const styles = {
     color: "#334155",
     margin: "0 0 20px 0",
   },
-  avatarWrapper: {
-    position: "relative",
-    width: "112px",
-    height: "112px",
-    marginBottom: "24px",
-    transition: "transform 0.2s ease, opacity 0.2s ease",
-  },
-  avatarImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: "50%",
-    objectFit: "cover",
-    border: "3px solid #2563EB",
-  },
-  avatarOverlayBadge: {
-    position: "absolute",
-    bottom: "2px",
-    right: "2px",
-    background: "#2563EB",
-    borderRadius: "50%",
-    width: "30px",
-    height: "30px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: "0 2px 8px rgba(37, 99, 235, 0.4)",
-    border: "2px solid #ffffff",
-  },
   inputsGroup: {
     width: "100%",
     display: "flex",
@@ -301,6 +427,7 @@ const styles = {
     fontSize: "1rem",
   },
   saveButton: {
+    flex: 1,
     width: "100%",
     padding: "14px",
     background: "#10B981",
@@ -310,6 +437,69 @@ const styles = {
     cursor: "pointer",
     fontWeight: "bold",
     fontSize: "1rem",
+  },
+
+  errorBox: {
+    background: "#ffe6e6",
+    color: "#cc0000",
+    padding: "10px",
+    borderRadius: "5px",
+    marginBottom: "15px",
+    fontSize: "14px",
+    width: "100%",
+  },
+
+  successBox: {
+    background: "#DCFCE7",
+    color: "#166534",
+    padding: "10px",
+    borderRadius: "5px",
+    marginBottom: "15px",
+    fontSize: "14px",
+    width: "100%",
+  },
+
+  fieldError: {
+    color: "#cc0000",
+    fontSize: "13px",
+    marginBottom: "6px",
+    marginTop: "-2px",
+  },
+
+  buttonGroup: {
+    display: "flex",
+    gap: "10px",
+    width: "100%",
+  },
+
+  cancelButton: {
+    flex: 1,
+    padding: "14px",
+    background: "#EF4444",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    fontSize: "1rem",
+  },
+  loadingContainer: {
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "15px",
+    backgroundColor: "#f5f6fa",
+  },
+
+  spinner: {
+    width: "40px",
+    height: "40px",
+    border: "4px solid #e2e8f0",
+    borderTop: "4px solid #2563EB",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
   },
 };
 

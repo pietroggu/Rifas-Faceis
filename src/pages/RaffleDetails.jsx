@@ -301,7 +301,7 @@ const styles = {
   container: {
     padding: "40px 20px 120px",
     textAlign: "center",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#f5f6fa",
     minHeight: "100vh",
   },
 

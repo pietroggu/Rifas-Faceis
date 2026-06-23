@@ -210,6 +210,7 @@ const styles = {
     backgroundColor: "#e2e8f0",
     borderRadius: "8px",
     marginBottom: "12px",
+    animation: "pulse 1.5s ease-in-out infinite",
   },
 
   skeletonLine: {
@@ -217,6 +218,7 @@ const styles = {
     backgroundColor: "#e2e8f0",
     borderRadius: "4px",
     marginBottom: "8px",
+    animation: "pulse 1.5s ease-in-out infinite",
   },
 
   skeletonLineSmall: {
@@ -225,6 +227,7 @@ const styles = {
     backgroundColor: "#e2e8f0",
     borderRadius: "4px",
     marginBottom: "8px",
+    animation: "pulse 1.5s ease-in-out infinite",
   },
 };
 

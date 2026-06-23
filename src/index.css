@@ -72,3 +72,15 @@ h2 {
   letter-spacing: -0.01em;
   margin-bottom: 0.75rem;
 }
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}

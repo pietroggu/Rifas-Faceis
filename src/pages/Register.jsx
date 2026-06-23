@@ -157,7 +157,7 @@ function Register() {
 
         if (!cleanName) {
             newErrors.name = "Nome é obrigatório";
-        } else if (cleanName.length < 3) {
+        } else if (cleanName.length < 2) {
             newErrors.name = "Nome muito curto";
         }
 
