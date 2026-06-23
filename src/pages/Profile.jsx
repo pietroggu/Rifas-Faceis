@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext"; 
 import { userApi } from "../api/user.api";
 import ImageUploader from "../components/ImageUploader";
@@ -64,15 +64,6 @@ function Profile() {
     const finalValue = name === "phone" ? formatBrazilianPhone(value) : value;
     
     setUser((prev) => ({ ...prev, [name]: finalValue }));
-  }
-
-  /**
-   * Programmatically triggers the hidden file picker input when the user clicks the avatar container.
-   */
-  function handleAvatarClick() {
-    if (isEditing && !isSaving) {
-      fileInputRef.current?.click();
-    }
   }
 
   /**
@@ -222,7 +213,7 @@ const styles = {
   container: {
     padding: "40px 20px",
     textAlign: "center",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#f5f6fa",
     minHeight: "100vh",
   },
   mainTitle: {

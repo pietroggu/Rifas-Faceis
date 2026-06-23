@@ -336,7 +336,7 @@ export default function RaffleDetails() {
 }
 
 const styles = {
-  container: { padding: "40px 20px 120px", textAlign: "center", backgroundColor: "#f8fafc", minHeight: "100vh" },
+  container: { padding: "40px 20px 120px", textAlign: "center", backgroundColor: "#f5f6fa", minHeight: "100vh" },
   description: { color: "#475569", fontSize: "1.1rem", margin: "10px 0 20px" },
   imageWrapper: { margin: "20px auto", maxWidth: "500px", borderRadius: "8px", overflow: "hidden", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" },
   image: { width: "100%", height: "auto", display: "block", objectFit: "cover", maxHeight: "300px" },

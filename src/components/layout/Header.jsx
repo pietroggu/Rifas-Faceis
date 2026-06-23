@@ -1,44 +1,41 @@
-import React from "react";
+import { Menu } from "lucide-react";
 
-/**
- * Header superior
- */
-function Header() {
+function Header({ onMenuClick }) {
   return (
     <header style={styles.header}>
-     
+      <button
+        onClick={onMenuClick}
+        style={styles.menuButton}
+      >
+        <Menu size={22} />
+      </button>
 
-  
     </header>
   );
 }
 
 const styles = {
   header: {
-    height: "65px",
+    height: "60px",
     background: "#2563EB",
-    borderBottom: "1px solid #ddd",
     display: "flex",
     alignItems: "center",
-    justifyContent: "space-between",
-    padding: "0 20px",
-    color: "#ffffff",
+    gap: "15px",
+    padding: "0 16px",
+    color: "#fff",
 
-    position: "sticky", 
+    position: "sticky",
     top: 0,
-    zIndex: 10,
-
-    width: "100%",
-    boxSizing: "border-box",
+    zIndex: 100,
   },
 
-  title: {
-    margin: 0,
-    fontSize: "18px",
-  },
-
-  user: {
-    fontSize: "14px",
+  menuButton: {
+    background: "transparent",
+    border: "none",
+    color: "#fff",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
   },
 };
 
