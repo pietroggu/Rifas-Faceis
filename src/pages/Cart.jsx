@@ -103,6 +103,9 @@ function Cart() {
                         {groupedItems.length} rifas • {cartItems.length} números selecionados<br></br>
                         Revise seus números antes de finalizar.
                     </p>
+                    <p style={styles.alerta}>
+                       Após o pagamento envie um comprovante para (35)984247532
+                    </p>
                 </div>
 
                 <div style={styles.grid}>
@@ -175,6 +178,7 @@ function Cart() {
                                 <small style={{ color: "#ef4444", marginTop: "5px", fontSize: "0.75rem", fontWeight: "bold" }}>
                                     ⚠️ Digite o valor exato no app do seu banco!
                                 </small>
+                                 <small style={{ color: "#64748b", marginTop: "10px", fontsize: "1.25rem" }}>Após o pagamento envie o comprovante para (35)984247532</small>
                             </div>
                         </div>
 
@@ -246,6 +250,12 @@ const styles = {
         color: "#0f172a",
         fontSize: "2rem",
         fontWeight: "800",
+    },
+    alerta: {
+        margin: 0,
+        color: "#0f172a",
+        fontSize: "1,05rem",
+        fontWeight: "200",
     },
 
     modalContent: {
