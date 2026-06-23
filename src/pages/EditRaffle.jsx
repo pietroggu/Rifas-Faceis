@@ -129,15 +129,56 @@ export default function EditRaffle() {
   ];
 
   // Filtra apenas os tickets que foram vendidos e não estão cancelados
- const soldTickets = tickets.filter(t => t.userId !== null && t.validation === 0);
+  const soldTickets = tickets.filter(t => t.userId !== null && t.validation === 0);
+  const totalSold = soldTickets.length;
 
+  const totalRevenue =
+    totalSold * Number(form.ticketPrice || 0);
+
+  const salesPercentage =
+    Number(form.totalTickets) > 0
+      ? ((totalSold / Number(form.totalTickets)) * 100).toFixed(1)
+      : 0;
   return (
     <main style={styles.container}>
-      <h1 style={styles.title}>Editar Rifa</h1>
+      <h1 style={styles.title}>Detalhes da sua rifa</h1>
+        <div style={styles.statsContainer}>
+          <div style={styles.statCard}>
+            <span style={styles.statValue}>
+              {totalSold}
+            </span>
+            <span style={styles.statLabel}>
+              Números vendidos
+            </span>
+          </div>
+
+          <div style={styles.statCard}>
+            <span style={styles.statValue}>
+              {salesPercentage}%
+            </span>
+            <span style={styles.statLabel}>
+              Vendido
+            </span>
+          </div>
+
+          <div style={styles.statCard}>
+            <span style={styles.statValue}>
+              {totalRevenue.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </span>
+            <span style={styles.statLabel}>
+              Arrecadado
+            </span>
+          </div>
+        </div>
+        
 
       {error && <p style={styles.errorText}>{error}</p>}
 
       <div style={styles.form}>
+        <h3 style={styles.subtitle}>Editar dados da rifa</h3>
         {fields.map(({ label, name, type }) => (
           <div key={name} style={styles.fieldGroup}>
             <label style={styles.label}>{label}</label>
@@ -283,24 +324,38 @@ const styles = {
     padding: "40px 20px",
     backgroundColor: "#f8fafc",
     minHeight: "100vh",
+    boxSizing: "border-box",
   },
+
   title: {
     textAlign: "center",
     color: "#1e293b",
     fontSize: "1.75rem",
-    marginBottom: "32px",
+    marginBottom: "20px",
   },
+
+  subtitle: {
+    textAlign: "center",
+    color: "#1e293b",
+    fontSize: "1.4rem",
+    marginBottom: "15px",
+  },
+
   form: {
     maxWidth: "500px",
+    width: "100%",
     margin: "0 auto",
     background: "#fff",
     borderRadius: "12px",
     padding: "32px",
     boxShadow: "0 4px 6px -1px rgba(0,0,0,0.07)",
+    boxSizing: "border-box",
   },
+
   fieldGroup: {
     marginBottom: "20px",
   },
+
   label: {
     display: "block",
     marginBottom: "6px",
@@ -308,6 +363,7 @@ const styles = {
     color: "#334155",
     fontSize: "0.9rem",
   },
+
   input: {
     width: "100%",
     padding: "10px 12px",
@@ -318,13 +374,16 @@ const styles = {
     boxSizing: "border-box",
     outline: "none",
   },
+
   buttonRow: {
     display: "flex",
+    flexWrap: "wrap",
     gap: "12px",
     marginTop: "28px",
   },
+
   button: {
-    flex: 1,
+    flex: "1 1 180px",
     padding: "12px",
     background: "#2563eb",
     color: "#fff",
@@ -334,8 +393,9 @@ const styles = {
     fontSize: "0.95rem",
     cursor: "pointer",
   },
+
   cancelButton: {
-    flex: 1,
+    flex: "1 1 180px",
     padding: "12px",
     background: "#f1f5f9",
     color: "#475569",
@@ -345,31 +405,79 @@ const styles = {
     fontSize: "0.95rem",
     cursor: "pointer",
   },
+
   errorText: {
     color: "#ef4444",
     textAlign: "center",
     marginBottom: "16px",
     fontWeight: "600",
   },
+
   stateText: {
     textAlign: "center",
     padding: "40px",
     color: "#64748b",
   },
+
+  /* ---------- ESTATÍSTICAS ---------- */
+
+  statsContainer: {
+    maxWidth: "500px",
+    margin: "0 auto 24px",
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "12px",
+  },
+
+  statCard: {
+    flex: "1 1 140px",
+    minWidth: "140px",
+    background: "#fff",
+    borderRadius: "12px",
+    padding: "16px",
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.07)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+  },
+
+  statValue: {
+    fontSize: "1.2rem",
+    fontWeight: "bold",
+    color: "#2563eb",
+    textAlign: "center",
+    wordBreak: "break-word",
+  },
+
+  statLabel: {
+    marginTop: "4px",
+    fontSize: "0.8rem",
+    color: "#64748b",
+    textAlign: "center",
+  },
+
+  /* ---------- TICKETS ---------- */
+
   ticketSection: {
     marginTop: "40px",
     borderTop: "1px solid #e2e8f0",
-    paddingTop: "20px"
+    paddingTop: "20px",
   },
+
   sectionTitle: {
     fontSize: "1.1rem",
     color: "#1e293b",
-    marginBottom: "15px"
+    marginBottom: "15px",
   },
+
   ticketList: {
     listStyle: "none",
-    padding: 0
+    padding: 0,
+    margin: 0,
   },
+
   ticketItem: {
     display: "flex",
     justifyContent: "space-between",
@@ -378,8 +486,11 @@ const styles = {
     backgroundColor: "#f8fafc",
     borderRadius: "8px",
     marginBottom: "8px",
-    border: "1px solid #e2e8f0"
+    border: "1px solid #e2e8f0",
+    wordBreak: "break-word",
+    boxSizing: "border-box",
   },
+
   inlineCancelBtn: {
     padding: "6px 12px",
     background: "#fee2e2",
@@ -388,15 +499,13 @@ const styles = {
     borderRadius: "6px",
     fontSize: "0.8rem",
     fontWeight: "bold",
-    cursor: "pointer"
+    cursor: "pointer",
+    whiteSpace: "nowrap",
   },
-  emptyText: {
-    fontSize: "0.85rem",
-    color: "#94a3b8",
-    textAlign: "center"
-  },
+
   copyButton: {
-    padding: "6px 12px",
+    width: "100%",
+    padding: "10px 12px",
     background: "#eff6ff",
     color: "#2563eb",
     border: "1px solid #bfdbfe",
@@ -405,7 +514,13 @@ const styles = {
     fontWeight: "600",
     cursor: "pointer",
     transition: "all 0.2s ease",
-    marginRight: "8px",
-    marginTop: "12px"
+    marginTop: "12px",
+    boxSizing: "border-box",
+  },
+
+  emptyText: {
+    fontSize: "0.85rem",
+    color: "#94a3b8",
+    textAlign: "center",
   },
 };
