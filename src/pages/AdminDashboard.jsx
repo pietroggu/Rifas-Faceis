@@ -40,8 +40,19 @@ function AdminDashboard() {
   async function loadRaffles() {
     try {
       setLoading(true);
+
       const data = await RaffleService.getAllRaffles();
-      setRaffles(data);
+
+      const privilegedUsers = [3, 7];
+
+      const filteredRaffles = privilegedUsers.includes(Number(user?.id))
+        ? data
+        : data.filter(
+            raffle => Number(raffle.authorId) === Number(user?.id)
+          );
+
+      setRaffles(filteredRaffles);
+
     } catch (error) {
       console.error("Failed to fetch dashboard raffles:", error);
     } finally {

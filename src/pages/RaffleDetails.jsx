@@ -88,26 +88,40 @@ export default function RaffleDetails() {
         <h1>{raffle.name}</h1>
         {raffle.description && <p style={styles.description}>{raffle.description}</p>}
       </header>
-      {user?.role === 1 && (
-        <div style={{ maxWidth: "500px", margin: "0 auto 16px", textAlign: "center" }}>
-          <button
-            onClick={() => navigate(`/editar-rifa/${id}`)}
+      {(() => {
+        const privilegedUsers = [3, 7];
+
+        const canEdit =
+          privilegedUsers.includes(Number(user?.id)) ||
+          Number(raffle?.authorId) === Number(user?.id);
+
+        return canEdit ? (
+          <div
             style={{
-              padding: "8px 18px",
-              background: "#0b9bf5",
-              color: "#fff",
-              border: "none",
-              alignItems: "center",
-              borderRadius: "8px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              fontSize: "0.9rem",
+              maxWidth: "500px",
+              margin: "0 auto 16px",
+              textAlign: "center",
             }}
           >
-            ✏️ Editar rifa
-          </button>
-        </div>
-      )}
+            <button
+              onClick={() => navigate(`/editar-rifa/${id}`)}
+              style={{
+                padding: "8px 18px",
+                background: "#0b9bf5",
+                color: "#fff",
+                border: "none",
+                alignItems: "center",
+                borderRadius: "8px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                fontSize: "0.9rem",
+              }}
+            >
+              ✏️ Editar rifa
+            </button>
+          </div>
+        ) : null;
+      })()}
 
       {raffle.imageUrl && (
         <div style={styles.imageWrapper}>
