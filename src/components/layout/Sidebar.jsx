@@ -1,19 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext"; // Importação única correta
 import logo from "../../assets/logo_branca.png";
 import "./Sidebar.css";
+import { useCart } from "../../context/CartContext";
 import { Home, Ticket, HelpCircle, Lock, User, LogOut, ShoppingCart } from "lucide-react";
 
 /**
  * Navigation Sidebar component for application layout navigation controls.
  */
-function Sidebar() {
-  const [open, setOpen] = useState(false);
-  const { user, logoutUser } = useAuth(); // <--- EXTRAÇÃO DO USER ADICIONADA AQUI
+function Sidebar({ open, setOpen }) {
+  const { user, logoutUser } = useAuth();
+  const { cartItems, clearCart } = useCart();
+
   const navigate = useNavigate();
-  
+
   const handleLogout = () => {
+    clearCart();
     setOpen(false);
     logoutUser();
     navigate("/");
@@ -24,16 +27,18 @@ function Sidebar() {
 
   return (
     <>
-      {!open && (
-        <button onClick={() => setOpen(true)} className="menuBtn" aria-label="Open navigation menu">
-          ☰
-        </button>
-      )}
 
       {open && <div className="overlay" onClick={() => setOpen(false)} />}
 
       <aside className={`sidebar ${open ? "open" : ""}`}>
         <img src={logo} alt="Application Logo" className="logo" />
+
+        <div className="user-info">
+          <strong>{user?.name || "Visitante"}</strong>
+          <span>
+            {user?.role === 1 ? "Administrador" : "Usuário"}
+          </span>
+        </div>
 
         <nav className="nav">
           <NavLink to="/home" onClick={() => setOpen(false)} className={getNavLinkClass}>
@@ -44,8 +49,19 @@ function Sidebar() {
             <Ticket size={18} /> Minhas rifas
           </NavLink>
 
-          <NavLink to="/cart" onClick={() => setOpen(false)} className={getNavLinkClass}>
-            <ShoppingCart size={18} /> Carrinho
+          <NavLink
+            to="/cart"
+            onClick={() => setOpen(false)}
+            className={getNavLinkClass}
+          >
+            <ShoppingCart size={18} />
+            Carrinho
+
+            {cartItems.length > 0 && (
+              <span className="cart-badge">
+                {cartItems.length}
+              </span>
+            )}
           </NavLink>
 
           <NavLink to="/faq" onClick={() => setOpen(false)} className={getNavLinkClass}>

@@ -333,7 +333,7 @@ antes da rifa, sua compra será cancelada!`;
 const styles = {
   container: {
     padding: "40px 20px",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#f5f6fa",
     minHeight: "100vh",
     boxSizing: "border-box",
   },

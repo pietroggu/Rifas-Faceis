@@ -1,4 +1,6 @@
-function CartItemCard({ raffle, onRemove }) {
+import { Trash2 } from "lucide-react";
+
+function CartItemCard({ raffle, onRemove, onDeleteRaffle }) {
 
     const unitPrice = raffle.totalPrice / raffle.quantity;
 
@@ -8,6 +10,13 @@ function CartItemCard({ raffle, onRemove }) {
                 <span style={styles.badge}>
                     🎟️ {raffle.quantity} números
                 </span>
+
+                <button
+                    style={styles.deleteRaffleButton}
+                    onClick={onDeleteRaffle}
+                >
+                    <Trash2 size={18} /> Remover rifa
+                </button>
             </div>
 
             <h3 style={styles.raffleName}>
@@ -101,6 +110,30 @@ const styles = {
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: "12px",
+    },
+
+    deleteRaffleButton: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "6px",
+
+        border: "none",
+        background: "#fee2e2",
+        color: "#dc2626",
+
+        padding: "8px 12px",
+        borderRadius: "8px",
+
+        cursor: "pointer",
+        fontWeight: "600",
+        fontSize: "0.9rem",
+
+        transition: "all 0.2s ease",
+    },
+
+    deleteRaffleButtonHover: {
+        background: "#fecaca",
     },
 
     badge: {

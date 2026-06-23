@@ -169,7 +169,7 @@ function Home() {
 }
 
 const styles = {
-  container: { padding: "20px", textAlign: "center", backgroundColor: "#f8fafc", minHeight: "100vh" },
+  container: { padding: "20px", textAlign: "center", backgroundColor: "#f5f6fa", minHeight: "100vh" },
   center: { textAlign: "center", padding: "10px", margin: "5px", color: "#0f172a" },
   errorText: { textAlign: "center", color: "#ef4444", marginTop: "20px", fontWeight: "bold" },
   controls: { display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", marginTop: "20px", marginBottom: "10px" },

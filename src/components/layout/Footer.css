@@ -9,6 +9,7 @@
   color: #6b6375;
   font-weight: 500;
   letter-spacing: 0.3px;
+  flex-shrink: 0;
 }
 
 .footer p {
@@ -18,4 +19,17 @@
 .footer span {
   margin: 0 6px;
   opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    height: auto;
+    padding: 12px;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .footer p {
+    line-height: 1.4;
+  }
 }

@@ -12,9 +12,31 @@ function Cart() {
     const { cartItems, removeFromCart, clearCart } = useCart();
     const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [raffleToDelete, setRaffleToDelete] = useState(null);
     
     // Estado para o Modal do Pix
     const [pixModalOpen, setPixModalOpen] = useState(false);
+
+    function handleRequestDelete(raffle) {
+        setRaffleToDelete(raffle);
+        setDeleteModalOpen(true);
+    }
+
+    function handleConfirmDelete() {
+        if (!raffleToDelete) return;
+
+        raffleToDelete.numbers.forEach(number => {
+            removeFromCart(
+                raffleToDelete.raffleId,
+                number
+            );
+        });
+
+        setDeleteModalOpen(false);
+        setRaffleToDelete(null);
+    }
+
 
     const total = cartItems.reduce((acc, item) => acc + item.price, 0);
     const groupedItems = Object.values(
@@ -106,6 +128,7 @@ function Cart() {
                                     key={raffle.raffleId}
                                     raffle={raffle}
                                     onRemove={removeFromCart}
+                                    onDeleteRaffle={() => handleRequestDelete(raffle)}
                                 />
                             ))
                         )}
@@ -169,6 +192,41 @@ function Cart() {
                     </div>
                 </div>
             )}
+
+            {deleteModalOpen && (
+                <div style={styles.modalOverlay}>
+                    <div style={styles.confirmModal}>
+                        <h3>
+                            Remover rifa?
+                        </h3>
+
+                        <p>
+                            Deseja realmente remover todos os números da rifa
+                            <strong>
+                                {" "}
+                                {raffleToDelete?.raffleName}
+                            </strong>
+                            ?
+                        </p>
+
+                        <div style={styles.confirmActions}>
+                            <button
+                                style={styles.cancelBtn}
+                                onClick={() => setDeleteModalOpen(false)}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                style={styles.deleteBtn}
+                                onClick={handleConfirmDelete}
+                            >
+                                Remover
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -176,7 +234,7 @@ function Cart() {
 const styles = {
     page: {
         minHeight: "100vh",
-        backgroundColor: "#f8fafc",
+        backgroundColor: "#f5f6fa",
         display: "flex",
         justifyContent: "center",
         alignItems: "flex-start",
@@ -197,6 +255,41 @@ const styles = {
         width: "90%",
         maxWidth: "500px",
         position: "relative",
+    },
+
+    confirmModal: {
+        background: "#fff",
+        padding: "24px",
+        borderRadius: "16px",
+        width: "90%",
+        maxWidth: "420px",
+        textAlign: "center",
+    },
+
+    confirmActions: {
+        display: "flex",
+        justifyContent: "center",
+        gap: "12px",
+        marginTop: "20px",
+    },
+
+    cancelBtn: {
+        background: "#e2e8f0",
+        border: "none",
+        padding: "10px 18px",
+        borderRadius: "8px",
+        cursor: "pointer",
+        fontWeight: "600",
+    },
+
+    deleteBtn: {
+        background: "#ef4444",
+        color: "#fff",
+        border: "none",
+        padding: "10px 18px",
+        borderRadius: "8px",
+        cursor: "pointer",
+        fontWeight: "600",
     },
 
     modalOverlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 },

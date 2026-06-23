@@ -118,7 +118,7 @@ const styles = {
   contactContainer: {
     marginTop: "50px",
     padding: "30px",
-    background: "#f1f5f9",
+    background: "#f5f6fa",
     borderRadius: "16px",
   },
   contactTitle: {
