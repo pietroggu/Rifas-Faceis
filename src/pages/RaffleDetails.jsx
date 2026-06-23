@@ -5,6 +5,8 @@ import { useCart } from "../context/CartContext"; // Importar o CartContext
 import NumberCard from "../components/NumberCard";
 import PurchaseModal from "../components/PurchaseModal";
 import RaffleService from "../services/raffleService";
+import { Text } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 
 export default function RaffleDetails() {
   const { id } = useParams();
@@ -18,7 +20,7 @@ export default function RaffleDetails() {
   const [error, setError] = useState(null);
   const [selectedNumber, setSelectedNumber] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [cartMessage, setCartMessage] = useState("");
+  const [searchNumber, setSearchNumber] = useState("");
 
   useEffect(() => {
     async function fetchRaffleData() {
@@ -32,9 +34,14 @@ export default function RaffleDetails() {
         const totalTickets = raffleData.totalTickets || 100;
         const soldTickets = raffleData.tickets || [];
 
+        const soldMap = new Map(
+          soldTickets.map(ticket => [ticket.number, ticket])
+        );
+
         const generatedGrid = Array.from({ length: totalTickets }, (_, index) => {
           const currentNumber = index + 1;
-          const ticket = soldTickets.find((t) => t.number === currentNumber);
+
+          const ticket = soldMap.get(currentNumber);
 
           return {
             id: currentNumber,
@@ -74,8 +81,34 @@ export default function RaffleDetails() {
     });
 
     setModalOpen(false);
-    setCartMessage(`Número ${data.number} adicionado ao carrinho!`);
   }
+
+  const soldCount = numbers.filter(
+    n => n.isSold && n.validation === 0
+  ).length;
+
+  const raffleItemsInCart = cartItems.filter(
+    item => item.raffleId === id
+  ).length;
+
+  const availableCount =
+    (raffle?.totalTickets || 0)
+    - soldCount
+    - raffleItemsInCart;
+
+  const progress =
+    raffle?.totalTickets
+      ? Math.round((soldCount / raffle.totalTickets) * 100)
+      : 0;
+
+  const filteredNumbers = numbers.filter(num => {
+    if (!searchNumber) return true;
+
+    return num.number
+      .toString()
+      .includes(searchNumber);
+  });
+
 
   if (loading) return <p style={styles.stateText}>Carregando detalhes da rifa...</p>;
   if (error) return <p style={{ ...styles.stateText, color: "#ef4444" }}>{error}</p>;
@@ -123,6 +156,25 @@ export default function RaffleDetails() {
         ) : null;
       })()}
 
+      {cartItems.length > 0 && (
+        <button
+          onClick={() => navigate("/cart")}
+          style={styles.floatingCart}
+        >
+          <ShoppingCart size={18} /> Carrinho ({raffleItemsInCart})
+        </button>
+      )}
+      
+      <div style={styles.prizeCard}>
+        <span style={styles.prizeLabel}>
+          🏆 PRÊMIO
+        </span>
+
+        <h2 style={styles.prizeText}>
+          {raffle.prize}
+        </h2>
+      </div>
+
       {raffle.imageUrl && (
         <div style={styles.imageWrapper}>
           <img src={raffle.imageUrl} alt={raffle.name} style={styles.image} />
@@ -130,36 +182,131 @@ export default function RaffleDetails() {
       )}
 
       <section style={styles.metaDetails}>
-        <p>🏆 Prêmio: <strong>{raffle.prize}</strong></p>
         {raffle.category && <p>📁 Categoria: {raffle.category}</p>}
         <p>💰 Valor por número: <strong>{raffle.formattedPrice}</strong></p>
         <p>📅 Data do Sorteio: {raffle.formattedDrawDate}</p>
       </section>
-        {cartMessage && (
-          <div style={styles.successAlert}>
-            <span style={styles.alertText}>{cartMessage}</span>
-            <button 
-              onClick={() => setCartMessage("")} 
-              style={styles.closeAlertButton}
-              title="Fechar aviso"
-            >
-              ✕
-            </button>
-          </div>
-        )}
+
+
+      <div style={styles.statsContainer}>
+        <div style={styles.statCard}>
+          <strong
+            style={{
+              fontSize: "1.4rem",
+              color: "#2563eb",
+            }}
+          >{raffle.totalTickets}</strong>
+          <span>Total</span>
+        </div>
+
+        <div style={styles.statCard}>
+          <strong
+            style={{
+              fontSize: "1.4rem",
+              color: "#64748b",
+            }}
+          >{soldCount}</strong>
+          <span>Vendidos</span>
+        </div>
+
+        <div style={styles.statCard}>
+          <strong
+            style={{
+              fontSize: "1.4rem",
+              color: "#10b981",
+            }}
+          >{availableCount}</strong>
+          <span>Disponíveis</span>
+        </div>
+      </div>
+
+      <div style={styles.progressWrapper}>
+        <div style={styles.progressContainer}>
+          <div
+            style={{
+              ...styles.progressBar,
+              width: `${progress}%`,
+            }}
+          />
+        </div>
+
+        <span style={styles.progressText}>
+          {progress}% vendido
+        </span>
+      </div>
+
 
       {/* Botão flutuante ou de atalho para ir ao carrinho se houver itens */}
-      {cartItems.length > 0 && (
-        <button 
-          onClick={() => navigate("/cart")} 
-          style={{ padding: "10px 20px", marginBottom: "20px", cursor: "pointer", backgroundColor: "#2563EB", color: "#fff", border: "none", borderRadius: "5px" }}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "12px",
+          marginBottom: "20px",
+          flexWrap: "wrap",
+        }}
+      >
+        <button
+          onClick={() => navigate("/home")}
+          style={{
+            padding: "10px 20px",
+            cursor: "pointer",
+            backgroundColor: "#64748b",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            fontWeight: "600",
+          }}
         >
-          Ver Carrinho ({cartItems.length})
+          Ver Rifas
         </button>
-      )}
+      </div>
+
+
+      <section style={styles.searchSection}>
+        <input
+          type="text"
+          placeholder="🔍 Buscar número..."
+          value={searchNumber}
+          onChange={(e) => setSearchNumber(e.target.value)}
+          style={styles.searchInput}
+        />
+      </section>
+
+      <div style={styles.legend}>
+        <div style={styles.legendItem}>
+          <div
+            style={{
+              ...styles.legendColor,
+              background: "#10b981",
+            }}
+          />
+          Disponível
+        </div>
+
+        <div style={styles.legendItem}>
+          <div
+            style={{
+              ...styles.legendColor,
+              background: "#cbd5e1",
+            }}
+          />
+          Reservado/Vendido
+        </div>
+
+        <div style={styles.legendItem}>
+          <div
+            style={{
+              ...styles.legendColor,
+              background: "#2563eb",
+            }}
+          />
+          No carrinho
+        </div>
+      </div>
 
       <section style={styles.grid} aria-label="Ticket Selection Grid">
-        {numbers.map((num) => {
+        {filteredNumbers.map((num) => {
           // Checa se o número já está selecionado/reservado no carrinho global
           const isInCart = cartItems.some(item => item.raffleId === id && item.number === num.number);
           
@@ -167,10 +314,8 @@ export default function RaffleDetails() {
             <NumberCard
               key={num.id}
               number={num.number}
-              // O ticket fica 'sold' (cinza) apenas se não estiver cancelado (validation === 0)
-              sold={(num.isSold && num.validation === 0) || isInCart}
-              // Passamos explicitamente o estado de cancelado para o card
-              isCancelled={num.validation === 1}
+              sold={num.isSold && num.validation === 0}
+              isInCart={isInCart}
               onClick={handleNumberClick}
             />
           );
@@ -191,42 +336,137 @@ export default function RaffleDetails() {
 }
 
 const styles = {
-  container: { padding: "40px 20px", textAlign: "center", backgroundColor: "#f8fafc", minHeight: "100vh" },
+  container: { padding: "40px 20px 120px", textAlign: "center", backgroundColor: "#f8fafc", minHeight: "100vh" },
   description: { color: "#475569", fontSize: "1.1rem", margin: "10px 0 20px" },
   imageWrapper: { margin: "20px auto", maxWidth: "500px", borderRadius: "8px", overflow: "hidden", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" },
   image: { width: "100%", height: "auto", display: "block", objectFit: "cover", maxHeight: "300px" },
   metaDetails: { margin: "20px auto", maxWidth: "500px", padding: "15px", background: "#fff", borderRadius: "8px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", textAlign: "left" },
   stateText: { textAlign: "center", padding: "40px", fontSize: "1.1rem", color: "#64748b" },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, 50px)", gap: "10px", justifyContent: "center", marginTop: "30px" },
-  successAlert: {
-    display: "flex",
-    justifyContent: "space-between", // Joga o texto para a esquerda e o X para a direita
-    alignItems: "center",            // Alinha verticalmente no meio
-    backgroundColor: "#2563EB",      // Azul escuro
-    color: "#ffffff",
-    padding: "12px 20px",
-    borderRadius: "8px",
-    margin: "20px auto",
+  
+ prizeCard: {
+    background: "#fff",
+    borderRadius: "12px",
+    padding: "20px",
+    margin: "0 auto 20px",
+    maxWidth: "700px",
+    borderLeft: "6px solid #f59e0b",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.08)"
+  },
+
+  prizeLabel: {
+    color: "#f59e0b",
+    fontWeight: "700",
+    fontSize: "0.85rem",
+    textTransform: "uppercase",
+  },
+
+  prizeText: {
+    color: "#0f172a",
+    marginTop: "8px",
+    fontSize: "1.5rem",
+    fontWeight: "700",
+  },
+
+  floatingCart: {
+      position: "fixed",
+      bottom: "70px",
+      right: "24px",
+      zIndex: 1000,
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      backgroundColor: "#2563eb",
+      color: "#fff",
+      border: "none",
+      borderRadius: "999px",
+      padding: "14px 18px",
+      fontWeight: "bold",
+      cursor: "pointer",
+      boxShadow: "0 8px 20px rgba(37,99,235,0.3)",
+    },
+
+  progressWrapper: {
     maxWidth: "500px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    animation: "fadeInEffect 0.25s ease-in-out forwards"
+    margin: "10px auto 20px",
   },
-  alertText: {
-    fontWeight: "bold",
-    textAlign: "left",
-    flex: 1, // Faz o texto ocupar o espaço necessário
+
+  progressText: {
+    display: "block",
+    marginTop: "6px",
+    color: "#64748b",
+    fontSize: "0.9rem",
+    fontWeight: "600",
   },
-  closeAlertButton: {
-    background: "none",
-    border: "none",
-    color: "#ffffff",
-    cursor: "pointer",
-    fontSize: "1.2rem",
-    fontWeight: "bold",
-    marginLeft: "15px",
-    padding: "0 5px",
-    lineHeight: "1",
-    opacity: "0.8",
-    transition: "opacity 0.2s",
+
+  progressContainer: {
+    width: "100%",
+    maxWidth: "500px",
+    height: "12px",
+    background: "#e2e8f0",
+    borderRadius: "999px",
+    overflow: "hidden",
+    margin: "10px auto 20px",
   },
+
+  progressBar: {
+    height: "100%",
+    background: "#10b981",
+  },
+
+  statsContainer: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "15px",
+    flexWrap: "wrap",
+    margin: "20px 0",
+  },
+
+  statCard: {
+    background: "#fff",
+    padding: "15px",
+    minWidth: "90px",
+    borderRadius: "10px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    display: "flex",
+    textAlign: "center",
+    flexDirection: "column",
+    gap: "5px",
+  },
+
+  searchSection: {
+    marginTop: "25px",
+    marginBottom: "20px",
+  },
+
+  searchInput: {
+    width: "100%",
+    maxWidth: "300px",
+    padding: "12px",
+    borderRadius: "8px",
+    border: "1px solid #cbd5e1",
+    fontSize: "1rem",
+  },
+
+  legend: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "20px",
+    flexWrap: "wrap",
+    marginBottom: "20px",
+  },
+
+  legendItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "0.9rem",
+  },
+
+  legendColor: {
+    width: "16px",
+    height: "16px",
+    borderRadius: "4px",
+  },
+  
 };

@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext"; // Importação única correta
 import logo from "../../assets/logo_branca.png";
 import "./Sidebar.css";
-import { Home, Ticket, HelpCircle, Lock, User, LogOut } from "lucide-react";
+import { Home, Ticket, HelpCircle, Lock, User, LogOut, ShoppingCart } from "lucide-react";
 
 /**
  * Navigation Sidebar component for application layout navigation controls.
@@ -45,7 +45,7 @@ function Sidebar() {
           </NavLink>
 
           <NavLink to="/cart" onClick={() => setOpen(false)} className={getNavLinkClass}>
-            🛒 Carrinho
+            <ShoppingCart size={18} /> Carrinho
           </NavLink>
 
           <NavLink to="/faq" onClick={() => setOpen(false)} className={getNavLinkClass}>
