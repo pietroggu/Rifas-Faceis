@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import RaffleService from "../services/raffleService";
+import UserService from "../services/userService";
 import TicketService from "../services/ticketService";
 
 export default function EditRaffle() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [users, setUsers] = useState({});
+  const [expandedTicket, setExpandedTicket] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -26,6 +29,30 @@ export default function EditRaffle() {
     async function loadData() {
       try {
         const raffle = await RaffleService.getRaffleById(id);
+        setTickets(raffle.tickets || []);
+
+        const uniqueUserIds = [
+          ...new Set(
+            raffle.tickets
+              .filter(t => t.userId)
+              .map(t => t.userId)
+          )
+        ];
+
+        const usersMap = {};
+
+        for (const userId of uniqueUserIds) {
+          try {
+            const user = await UserService.getUserById(userId);
+            usersMap[userId] = user;
+          } catch (err) {
+            console.error(err);
+          }
+        }
+
+        setUsers(usersMap);
+        console.log("RAFFLE:", raffle);
+        console.log("TICKETS:", raffle.tickets);
         setForm({
           name: raffle.name || "",
           prize: raffle.prize || "",
@@ -71,7 +98,7 @@ export default function EditRaffle() {
 
   // Função para cancelar um ticket específico
   async function handleCancelTicket(ticketId) {
-    if (!window.confirm("Deseja realmente cancelar este ticket? O número voltará a ficar disponível.")) return;
+    if (!window.confirm("Deseja realmente cancelar este ticket? O número voltará a ficar disponível. Tente primeiro entrar em contato com o comprador do número!")) return;
     
     try {
       await TicketService.cancelTicket(ticketId);
@@ -149,14 +176,99 @@ export default function EditRaffle() {
           ) : (
             <ul style={styles.ticketList}>
               {soldTickets.map(ticket => (
-                <li key={ticket.id} style={styles.ticketItem}>
-                  <span>Número: <strong>{ticket.number}</strong> (ID: {ticket.id})</span>
-                  <button 
-                    onClick={() => handleCancelTicket(ticket.id)}
-                    style={styles.inlineCancelBtn}
+                <li
+                  key={ticket.id}
+                  style={{
+                    ...styles.ticketItem,
+                    flexDirection: "column",
+                    alignItems: "stretch",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      cursor: "pointer",
+                    }}
+                    onClick={() =>
+                      setExpandedTicket(
+                        expandedTicket === ticket.id ? null : ticket.id
+                      )
+                    }
                   >
-                    Cancelar Ticket
-                  </button>
+                    <span>
+                      Número: <strong>{ticket.number}</strong> (ID: {ticket.id})
+                    </span>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCancelTicket(ticket.id);
+                      }}
+                      style={styles.inlineCancelBtn}
+                    >
+                      Cancelar Ticket
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const user = users[ticket.userId];
+
+                      const message = `Olá ${user?.name || ""}!
+
+                  Estamos entrando em contato sobre a sua compra da rifa.
+
+                   Número: ${ticket.number}
+                   Rifa: ${form.name}
+                   Data da compra: ${
+                        ticket.purchasedAt
+                          ? new Date(ticket.purchasedAt).toLocaleString("pt-BR")
+                          : "-"
+                      }
+
+                  Ainda não recebemos o comprovante de sua compra, poderia enviá-lo
+                  para esse número? Caso não tivermos resposta em 24 horas ou até 1 hora
+                  antes da rifa, sua compra será cancelada!`;
+
+                      navigator.clipboard.writeText(message);
+
+                      alert("Mensagem copiada!");
+                    }}
+                    style={styles.copyButton}
+                  > Copiar mensagem para perguntar sobre a compra!</button>
+
+                  {expandedTicket === ticket.id && (
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        paddingTop: "12px",
+                        borderTop: "1px solid #e2e8f0",
+                        fontSize: "0.9rem",
+                        color: "#475569",
+                      }}
+                    >
+                      <p>
+                        <strong>Comprador:</strong>{" "}
+                        {users[ticket.userId]?.name || "Não encontrado"}
+                      </p>
+
+                      <p>
+                        <strong>Telefone:</strong>{" "}
+                        {users[ticket.userId]?.phone ||
+                          users[ticket.userId]?.telephone ||
+                          users[ticket.userId]?.cellphone ||
+                          "-"}
+                      </p>
+
+                      <p>
+                        <strong>Data da compra:</strong>{" "}
+                        {ticket.purchasedAt
+                          ? new Date(ticket.purchasedAt).toLocaleString("pt-BR")
+                          : "-"}
+                      </p>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -282,5 +394,18 @@ const styles = {
     fontSize: "0.85rem",
     color: "#94a3b8",
     textAlign: "center"
-  }
+  },
+  copyButton: {
+    padding: "6px 12px",
+    background: "#eff6ff",
+    color: "#2563eb",
+    border: "1px solid #bfdbfe",
+    borderRadius: "6px",
+    fontSize: "0.8rem",
+    fontWeight: "600",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    marginRight: "8px",
+    marginTop: "12px"
+  },
 };

@@ -5,6 +5,7 @@ import { CartProvider } from './context/CartContext';
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import Layout from "./components/layout/Layout";
+import RaffleOwnerRoute from "./components/RaffleOwnerRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
@@ -45,11 +46,18 @@ function App() {
 
           {/* Rotas exclusivas de admin — exige role === 1 */}
           <Route element={<AdminRoute />}>
-            <Route element={<Layout />}>
-              <Route path="/adminDashboard" element={<AdminDashboard/>} />
-              <Route path="/editar-rifa/:id" element={<EditRaffle />} />
+  <Route element={<Layout />}>
+    <Route path="/adminDashboard" element={<AdminDashboard />} />
+  </Route>
             </Route>
-          </Route>
+
+            <Route element={<ProtectedRoute />}>
+              <Route element={<RaffleOwnerRoute />}>
+                <Route element={<Layout />}>
+                  <Route path="/editar-rifa/:id" element={<EditRaffle />} />
+                </Route>
+              </Route>
+            </Route>
         </Routes>
         </CartProvider>
       </AuthProvider>
