@@ -217,21 +217,23 @@ const styles = {
     },
 
     grid: {
-        display: "grid",
-        gridTemplateColumns: "minmax(0, 2fr) 380px",
+        display: "flex",
+        flexWrap: "wrap",
         gap: "24px",
-        alignItems: "start",
     },
+
 
     itemsColumn: {
         display: "flex",
         flexDirection: "column",
+        flex: "2 1 700px",
         gap: "16px",
     },
 
     summaryColumn: {
         position: "sticky",
         top: "20px",
+        flex: "1 1 320px",
     },
 
     emptyState: {

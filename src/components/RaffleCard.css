@@ -35,7 +35,7 @@
 }
 
 .raffle-card.sold-out .raffle-card-image {
-  filter: grayscale(60%);
+  filter: grayscale(80%);
 }
 
 /* Top cover section responsive background grid */

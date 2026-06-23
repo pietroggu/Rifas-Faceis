@@ -4,7 +4,7 @@ import React from "react";
  * NumberCard represents an individual interactive unit in the ticket matrix selection board.
  * Aligned with standard properties coming from the parent view context layer.
  */
-function NumberCard({ number, sold, isCancelled, onClick }) {
+function NumberCard({ number, sold, isCancelled, isInCart, onClick }) {
   /**
    * Intercepts and delegates structural selection events back to the parent component context
    * only if the ticket target state is unreserved.
@@ -16,15 +16,27 @@ function NumberCard({ number, sold, isCancelled, onClick }) {
     }
   }
 
-  const isBlocked = sold && !isCancelled;
+  const isBlocked = (sold && !isCancelled) || isInCart;
 
   // Dynamic style composition matching runtime allocation states
+  let backgroundColor = "#10b981";
+
+  if (sold) {
+    backgroundColor = "#cbd5e1";
+  }
+
+  if (isCancelled) {
+    backgroundColor = "#ef4444";
+  }
+
+  if (isInCart) {
+    backgroundColor = "#2563eb";
+  }
+
   const computedCardStyle = {
     ...styles.base,
-    backgroundColor: isBlocked ? "#cbd5e1" : "#10b981",
+    backgroundColor,
     cursor: isBlocked ? "not-allowed" : "pointer",
-    boxShadow: isBlocked ? "none" : "0 4px 6px -1px rgba(16, 185, 129, 0.2)",
-    transform: isBlocked ? "none" : "scale(1)",
   };
 
   return (
