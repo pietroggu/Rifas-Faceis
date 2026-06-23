@@ -4,12 +4,9 @@ import React from "react";
  * NumberCard represents an individual interactive unit in the ticket matrix selection board.
  * Aligned with standard properties coming from the parent view context layer.
  */
-function NumberCard({ number, sold, isCancelled, isInCart, onClick }) {
-  /**
-   * Intercepts and delegates structural selection events back to the parent component context
-   * only if the ticket target state is unreserved.
-   */
+function NumberCard({ number, sold, isCancelled, isInCart, onClick, disabled }) {
   function handleClick() {
+    if (disabled) return;
     const isAvailable = !sold || isCancelled;
     if (isAvailable && onClick) {
       onClick(number);
@@ -18,32 +15,30 @@ function NumberCard({ number, sold, isCancelled, isInCart, onClick }) {
 
   const isBlocked = (sold && !isCancelled) || isInCart;
 
-  // Dynamic style composition matching runtime allocation states
   let backgroundColor = "#10b981";
-
-  if (sold) {
-    backgroundColor = "#cbd5e1";
-  }
-
-  if (isCancelled) {
-    backgroundColor = "#ef4444";
-  }
-
-  if (isInCart) {
-    backgroundColor = "#2563eb";
-  }
+  if (sold) backgroundColor = "#cbd5e1";
+  if (isCancelled) backgroundColor = "#ef4444";
+  if (isInCart) backgroundColor = "#2563eb";
+  if (disabled && !sold && !isInCart) backgroundColor = "#cbd5e1";
 
   const computedCardStyle = {
     ...styles.base,
     backgroundColor,
-    cursor: isBlocked ? "not-allowed" : "pointer",
+    cursor: isBlocked || disabled ? "not-allowed" : "pointer",
+    opacity: disabled && !sold && !isInCart ? 1 : 1,
   };
 
   return (
-    <div 
-      onClick={handleClick} 
+    <div
+      onClick={handleClick}
       style={computedCardStyle}
-      title={isBlocked ? `Número ${number} - Esgotado` : `Selecionar Número ${number}`}
+      title={
+        disabled
+          ? `Número ${number} - Vendas encerradas`
+          : isBlocked
+          ? `Número ${number} - Esgotado`
+          : `Selecionar Número ${number}`
+      }
     >
       {number}
     </div>

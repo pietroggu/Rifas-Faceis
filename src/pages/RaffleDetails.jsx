@@ -61,9 +61,10 @@ export default function RaffleDetails() {
   }, [id]);
 
   const handleNumberClick = useCallback((number) => {
+    if (raffle?.drawnAt) return;
     setSelectedNumber(number);
     setModalOpen(true);
-  }, []);
+  }, [raffle]);
 
   function handleConfirmPurchase(data) {
     addToCart({
@@ -97,7 +98,11 @@ export default function RaffleDetails() {
     <main style={styles.container}>
       <header>
         <h1>{raffle.name}</h1>
-
+        {raffle.drawnAt && (
+              <div style={styles.closedBanner}>
+                🔒 As vendas estão encerradas para esta rifa.
+              </div>
+            )}
         {/* Card do vencedor — aparece apenas se o sorteio foi realizado */}
         {raffle.drawnAt && (
           <div style={styles.winnerCard}>
@@ -274,6 +279,7 @@ export default function RaffleDetails() {
               sold={num.isSold && num.validation === 0}
               isInCart={isInCart}
               onClick={handleNumberClick}
+              disabled={!!raffle.drawnAt}
             />
           );
         })}
@@ -540,5 +546,17 @@ const styles = {
     width: "16px",
     height: "16px",
     borderRadius: "4px",
+  },
+  closedBanner: {
+    maxWidth: "500px",
+    margin: "0 auto 16px",
+    background: "#f1f5f9",
+    border: "1px solid #e2e8f0",
+    borderRadius: "8px",
+    padding: "10px 16px",
+    color: "#64748b",
+    fontWeight: "600",
+    fontSize: "0.9rem",
+    textAlign: "center",
   },
 };
