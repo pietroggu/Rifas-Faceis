@@ -229,6 +229,7 @@ function AdminDashboard() {
   return (
     <div style={styles.container}>
       <h1 style={styles.mainTitle}>Painel Administrativo</h1>
+      <h4 style={styles.mainTitle}>Atenção, de preferência a colocar o link da imagem do que fazer o upload dela no site, imagens maiores que 1 mb não são suportadas para upload!</h4>
 
       {generalError ? (
         <div style={styles.errorBox}>
