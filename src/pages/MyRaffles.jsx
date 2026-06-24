@@ -7,6 +7,7 @@ function MyRaffles() {
   const [groupedRaffles, setGroupedRaffles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     async function fetchUserTickets() {
@@ -117,6 +118,47 @@ function MyRaffles() {
     return userWon ? "won" : "lost";
   }
 
+  function getFilteredRaffles() {
+    if (statusFilter === "all") {
+      return groupedRaffles;
+    }
+
+    return groupedRaffles.filter(
+      (raffle) => getRaffleStatus(raffle) === statusFilter
+    );
+  }
+
+  const filteredRaffles = getFilteredRaffles();
+
+  function countStatus(status) {
+    if(status === "all") return groupedRaffles.length;
+
+    return groupedRaffles.filter(
+      raffle => getRaffleStatus(raffle) === status
+    ).length;
+  }
+
+  function getCardStyle(status) {
+    if (status === "won") {
+      return {
+        ...styles.card,
+        ...styles.cardWon,
+      };
+    }
+
+    if (status === "lost") {
+      return {
+        ...styles.card,
+        ...styles.cardLost,
+      };
+    }
+
+    return {
+      ...styles.card,
+      ...styles.cardPending,
+    };
+  }
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -156,11 +198,112 @@ function MyRaffles() {
     <div style={styles.container}>
       <h1 style={styles.title}>Minhas Rifas</h1>
 
+      {groupedRaffles.length > 0 && (
+        <div style={styles.filters}>
+
+          <button
+            style={{
+              ...styles.filterButton,
+              ...(statusFilter === "all"
+                ? styles.filterActive
+                : {})
+            }}
+            onClick={() => setStatusFilter("all")}
+          >
+            Todas ({countStatus("all")})
+          </button>
+
+
+          <button
+            style={{
+              ...styles.filterButton,
+              ...(statusFilter === "pending"
+                ? styles.filterActive
+                : {})
+            }}
+            onClick={() => setStatusFilter("pending")}
+          >
+            Aguardando ({countStatus("pending")})
+          </button>
+
+
+          <button
+            style={{
+              ...styles.filterButton,
+              ...(statusFilter === "won"
+                ? styles.filterActive
+                : {})
+            }}
+            onClick={() => setStatusFilter("won")}
+          >
+            Ganhas ({countStatus("won")})
+          </button>
+
+
+          <button
+            style={{
+              ...styles.filterButton,
+              ...(statusFilter === "lost"
+                ? styles.filterActive
+                : {})
+            }}
+            onClick={() => setStatusFilter("lost")}
+          >
+            Perdidas ({countStatus("lost")})
+          </button>
+
+        </div>
+      )}
+
       {groupedRaffles.length === 0 ? (
-        <p style={styles.emptyMessage}>Você ainda não comprou nenhuma rifa.</p>
+        <div style={styles.emptyState}>
+          <div style={styles.emptyEmoji}>
+            🎟️
+          </div>
+
+          <h2 style={styles.emptyTitle}>
+            Você ainda não participou de nenhuma rifa
+          </h2>
+
+          <p style={styles.emptyDescription}>
+            Encontre uma rifa que combine com você e concorra a prêmios incríveis!
+          </p>
+
+          <button
+            style={styles.button}
+            onClick={() => navigate("/")}
+          >
+            Ver rifas disponíveis
+          </button>
+        </div>
+
+      ) : filteredRaffles.length === 0 ? (
+
+        <div style={styles.emptyState}>
+          <div style={styles.emptyEmoji}>
+            🔎
+          </div>
+
+          <h2 style={styles.emptyTitle}>
+            Nenhuma rifa encontrada filtro
+          </h2>
+
+          <p style={styles.emptyDescription}>
+            Não existem rifas com esse status.
+          </p>
+
+          <button
+            style={styles.button}
+            onClick={() => setStatusFilter("all")}
+          >
+            Mostrar todas
+          </button>
+        </div>
+
       ) : (
-        <div style={styles.list}>
-          {groupedRaffles.map((raffle) => {
+          <div style={styles.list}>
+
+         {filteredRaffles.map((raffle) => {
             const sortedTickets = sortTicketNumbers(raffle.tickets);
             const totalSpent = raffle.ticketPrice * raffle.tickets.length;
             const status = getRaffleStatus(raffle);
@@ -173,14 +316,7 @@ function MyRaffles() {
             return (
               <div
                 key={raffle.id}
-                style={{
-                  ...styles.card,
-                  borderTop: status === "won"
-                    ? "4px solid #f59e0b"
-                    : status === "lost"
-                    ? "4px solid #e2e8f0"
-                    : "4px solid #2563eb",
-                }}
+                style={getCardStyle(status)}
               >
                 {/* Cabeçalho */}
                 <div style={styles.cardHeader}>
@@ -202,7 +338,9 @@ function MyRaffles() {
                 {status === "won" && (
                   <div style={styles.resultBannerWon}>
                     <div>
-                      <p style={styles.resultTitle}>Parabéns, você ganhou!</p>
+                      <p style={styles.resultTitle}>
+                        🏆 Parabéns! Você foi o vencedor!
+                      </p>
                       <p style={styles.resultSub}>
                         Sorteio realizado em{" "}
                         {formatPurchaseDate(raffle.drawnAt)}
@@ -214,8 +352,8 @@ function MyRaffles() {
                 {status === "lost" && (
                   <div style={styles.resultBannerLost}>
                     <div>
-                      <p style={styles.resultTitle}>Não foi dessa vez</p>
-                      <p style={styles.resultSub}>
+                      <p style={styles.resultTitleLost}>Não foi dessa vez</p>
+                      <p style={styles.resultSubLost}>
                         Sorteio realizado em{" "}
                         {formatPurchaseDate(raffle.drawnAt)}
                         {raffle.winnerUser?.name
@@ -244,6 +382,7 @@ function MyRaffles() {
                           }}
                         >
                           #{ticket.number}
+                          {ticket.id === raffle.winnerTicketId && " 🏆"}
                           {ticket.id === raffle.winnerTicketId ? "" : ""}
                         </span>
                       ))}
@@ -268,10 +407,17 @@ function MyRaffles() {
                 </div>
 
                 <button
-                  style={styles.button}
+                  style={
+                    raffle.drawnAt
+                      ? styles.resultButton
+                      : styles.button
+                  }
                   onClick={() => navigate(`/rifa/${raffle.id}`)}
                 >
-                  Ver detalhes da rifa
+                  {raffle.drawnAt 
+                    ? "Ver resultado do sorteio"
+                    : "Ver detalhes da rifa"
+                  }
                 </button>
               </div>
             );
@@ -407,21 +553,27 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "12px",
-    background: "#fefce8",
-    border: "1px solid #fde68a",
+    background: "#fffbeb",
+    border: "2px solid #f59e0b",
     borderRadius: "10px",
-    padding: "12px 16px",
+    padding: "14px 16px",
     margin: "12px 0",
   },
   resultBannerLost: {
     display: "flex",
     alignItems: "center",
     gap: "12px",
-    background: "#fcf9f8",
-    border: "1px solid #e2e8f0",
+    background: "#fef2f2",
+    border: "1px solid #fca5a5",
     borderRadius: "10px",
     padding: "12px 16px",
     margin: "12px 0",
+  },
+  resultTitleLost: {
+    margin: 0,
+    fontWeight: "700",
+    fontSize: "0.95rem",
+    color: "#b91c1c",
   },
   resultIcon: {
     fontSize: "1.8rem",
@@ -437,6 +589,11 @@ const styles = {
     margin: "2px 0 0",
     fontSize: "0.8rem",
     color: "#64748b",
+  },
+  resultSubLost: {
+    margin: "2px 0 0",
+    fontSize: "0.8rem",
+    color: "#dc2626",
   },
 
   /* ---------- IMAGEM ---------- */
@@ -531,6 +688,86 @@ const styles = {
     cursor: "pointer",
     fontWeight: "bold",
     fontSize: "0.95rem",
+  },
+
+  filters: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "10px",
+    marginBottom: "30px",
+    flexWrap: "wrap",
+  },
+
+  filterButton: {
+    padding: "8px 18px",
+    borderRadius: "20px",
+    border: "1px solid #cbd5e1",
+    background: "#ffffff",
+    color: "#475569",
+    cursor: "pointer",
+    fontWeight: "600",
+  },
+
+  filterActive: {
+    background: "#2563EB",
+    color: "#ffffff",
+    borderColor: "#2563EB",
+  },
+
+  emptyState: {
+    maxWidth: "420px",
+    margin: "40px auto",
+    padding: "30px",
+    background: "#ffffff",
+    borderRadius: "16px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+  },
+
+  emptyEmoji: {
+    fontSize: "4rem",
+    marginBottom: "15px",
+  },
+
+  emptyTitle: {
+    color: "#1e293b",
+    fontSize: "1.3rem",
+    marginBottom: "10px",
+  },
+
+  emptyDescription: {
+    color: "#64748b",
+    marginBottom: "25px",
+    lineHeight: "1.5",
+  },
+
+  resultButton: {
+    width: "100%",
+    padding: "12px",
+    marginTop: "16px",
+    background: "#0f172a",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    fontSize: "0.95rem",
+  },
+
+  cardWon: {
+    border: "2px solid #f59e0b",
+    borderTop: "5px solid #f59e0b",
+    background: "#fffdf5",
+    boxShadow: "0 8px 20px rgba(245,158,11,0.18)",
+  },
+
+  cardLost: {
+    border: "1px solid #fca5a5",
+    borderTop: "5px solid #f87171",
+    background: "#fff7f7",
+  },
+
+  cardPending: {
+    borderTop: "5px solid #2563eb",
   },
 
   skeletonCard: {
