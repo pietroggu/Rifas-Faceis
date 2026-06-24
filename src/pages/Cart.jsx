@@ -14,9 +14,16 @@ function Cart() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [raffleToDelete, setRaffleToDelete] = useState(null);
+    const [messageModalOpen, setMessageModalOpen] = useState(false);
+    const [message, setMessage] = useState("");
     
     // Estado para o Modal do Pix
     const [pixModalOpen, setPixModalOpen] = useState(false);
+
+    function showMessage(text) {
+        setMessage(text);
+        setMessageModalOpen(true);
+    }
 
     function handleRequestDelete(raffle) {
         setRaffleToDelete(raffle);
@@ -61,7 +68,11 @@ function Cart() {
 
     // Abre o modal de pagamento se houver itens no carrinho
     const handleOpenPayment = () => {
-        if (cartItems.length === 0) return alert("Seu carrinho está vazio!");
+        if (cartItems.length === 0) {
+            showMessage("Seu carrinho está vazio!");
+            return;
+        }
+
         setPixModalOpen(true);
     };
 
@@ -81,12 +92,16 @@ function Cart() {
 
             await Promise.all(purchasePromises);
 
-            alert("Pagamento enviado! Suas rifas foram reservadas com sucesso.");
-            clearCart(); 
-            navigate("/"); 
+            showMessage("Pagamento enviado! Suas rifas foram reservadas com sucesso.");
+
+            clearCart();
+
+            setTimeout(() => {
+                navigate("/");
+            }, 8000);
         } catch (error) {
             console.error("Erro na finalização da compra:", error);
-            alert("Ocorreu um erro ao processar o pagamento. Tente novamente.");
+            showMessage("Ocorreu um erro ao processar o pagamento. Tente novamente.");
         } finally {
             setIsSubmitting(false);
         }
@@ -193,6 +208,29 @@ function Cart() {
                                     : "Confirmar Pagamento"}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {messageModalOpen && (
+                <div style={styles.modalOverlay}>
+                    <div style={styles.confirmModal}>
+
+                        <h3>
+                            Aviso
+                        </h3>
+
+                        <p>
+                            {message}
+                        </p>
+
+                        <button
+                            style={styles.confirmPaymentBtn}
+                            onClick={() => setMessageModalOpen(false)}
+                        >
+                            OK
+                        </button>
+
                     </div>
                 </div>
             )}
