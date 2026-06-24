@@ -78,7 +78,7 @@ function FAQ() {
         <h2 style={styles.contactTitle}>Precisa de mais ajuda?</h2>
         <p style={styles.contactText}>Entre em contato conosco:</p>
         <p style={styles.phoneText}>Rifa Facil 📞 (35) 98424-7532</p>
-        <p style={styles.EmailText}>Email: rifafacil@gmail.com </p>
+        <p style={styles.EmailText}>Email: rifasfaceis@gmail.com </p>
       </div>
     </div>
   );

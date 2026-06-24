@@ -88,7 +88,37 @@ export default function RaffleDetails() {
     return num.number.toString().includes(searchNumber);
   });
 
-  if (loading) return <p style={styles.stateText}>Carregando detalhes da rifa...</p>;
+  function LoadingSkeleton() {
+    return (
+      <main style={styles.container}>
+        <div style={styles.skeletonTitle}></div>
+
+        <div style={styles.skeletonCard}></div>
+
+        <div style={styles.skeletonPrize}></div>
+
+        <div style={styles.skeletonImage}></div>
+
+        <div style={styles.skeletonMeta}></div>
+
+        <div style={styles.skeletonStats}>
+          <div style={styles.skeletonStat}></div>
+          <div style={styles.skeletonStat}></div>
+          <div style={styles.skeletonStat}></div>
+        </div>
+
+        <div style={styles.skeletonProgress}></div>
+
+        <div style={styles.skeletonGrid}>
+          {Array.from({ length: 30 }).map((_, index) => (
+            <div key={index} style={styles.skeletonNumber}></div>
+          ))}
+        </div>
+      </main>
+    );
+  }
+
+  if (loading) return <LoadingSkeleton />;
   if (error) return <p style={{ ...styles.stateText, color: "#ef4444" }}>{error}</p>;
   if (!raffle) return <p style={styles.stateText}>Rifa não encontrada.</p>;
 
@@ -558,5 +588,91 @@ const styles = {
     fontWeight: "600",
     fontSize: "0.9rem",
     textAlign: "center",
+  },
+
+  skeletonTitle: {
+    width: "60%",
+    height: "32px",
+    background: "#e2e8f0",
+    borderRadius: "8px",
+    margin: "0 auto 20px",
+    animation: "pulse 1.5s infinite",
+  },
+
+  skeletonCard: {
+    maxWidth: "500px",
+    height: "70px",
+    background: "#e2e8f0",
+    borderRadius: "12px",
+    margin: "0 auto 20px",
+    animation: "pulse 1.5s infinite",
+  },
+
+  skeletonPrize: {
+    maxWidth: "700px",
+    height: "120px",
+    background: "#e2e8f0",
+    borderRadius: "12px",
+    margin: "20px auto",
+    animation: "pulse 1.5s infinite",
+  },
+
+  skeletonImage: {
+    maxWidth: "500px",
+    height: "250px",
+    background: "#e2e8f0",
+    borderRadius: "8px",
+    margin: "20px auto",
+    animation: "pulse 1.5s infinite",
+  },
+
+  skeletonMeta: {
+    maxWidth: "500px",
+    height: "120px",
+    background: "#e2e8f0",
+    borderRadius: "8px",
+    margin: "20px auto",
+    animation: "pulse 1.5s infinite",
+  },
+
+  skeletonStats: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "15px",
+    flexWrap: "wrap",
+    margin: "20px 0",
+  },
+
+  skeletonStat: {
+    width: "100px",
+    height: "80px",
+    background: "#e2e8f0",
+    borderRadius: "10px",
+    animation: "pulse 1.5s infinite",
+  },
+
+  skeletonProgress: {
+    maxWidth: "500px",
+    height: "14px",
+    background: "#e2e8f0",
+    borderRadius: "999px",
+    margin: "20px auto",
+    animation: "pulse 1.5s infinite",
+  },
+
+  skeletonGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, 50px)",
+    justifyContent: "center",
+    gap: "10px",
+    marginTop: "30px",
+  },
+
+  skeletonNumber: {
+    width: "50px",
+    height: "50px",
+    background: "#e2e8f0",
+    borderRadius: "8px",
+    animation: "pulse 1.5s infinite",
   },
 };

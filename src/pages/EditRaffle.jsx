@@ -4,6 +4,52 @@ import RaffleService from "../services/raffleService";
 import UserService from "../services/userService";
 import TicketService from "../services/ticketService";
 
+function EditRaffleSkeleton() {
+  return (
+    <main style={styles.container}>
+
+      <div style={styles.skeletonTitle}></div>
+
+
+      {/* Banner sorteio */}
+      <div style={styles.skeletonBox}></div>
+
+
+      {/* Estatísticas */}
+      <div style={styles.skeletonStats}>
+        <div style={styles.skeletonStat}></div>
+        <div style={styles.skeletonStat}></div>
+        <div style={styles.skeletonStat}></div>
+      </div>
+
+
+      {/* Formulário */}
+      <div style={styles.skeletonForm}>
+
+        <div style={styles.skeletonSubtitle}></div>
+
+
+        {[1,2,3,4,5,6,7].map(i => (
+          <div
+            key={i}
+            style={styles.skeletonInput}
+          />
+        ))}
+
+
+        <div style={styles.skeletonButtons}>
+          <div style={styles.skeletonButton}></div>
+          <div style={styles.skeletonButton}></div>
+        </div>
+
+
+      </div>
+
+    </main>
+  );
+}
+
+
 export default function EditRaffle() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -24,6 +70,10 @@ export default function EditRaffle() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState(null);
+  const [messageType, setMessageType] = useState("success");
+  const [confirmAction, setConfirmAction] = useState(null);
 
   useEffect(() => {
     async function loadData() {
@@ -74,63 +124,201 @@ export default function EditRaffle() {
     loadData();
   }, [id]);
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  function validate() {
+    const newErrors = {};
+
+    if (!form.name.trim()) {
+      newErrors.name = "Nome da rifa é obrigatório";
+    }
+
+    if (!form.prize.trim()) {
+      newErrors.prize = "Prêmio é obrigatório";
+    }
+
+    if (!form.ticketPrice || Number(form.ticketPrice) <= 0) {
+      newErrors.ticketPrice = "Preço deve ser maior que zero";
+    }
+
+    if (!form.totalTickets || Number(form.totalTickets) <= 0) {
+      newErrors.totalTickets = "Quantidade deve ser maior que zero";
+    }
+
+    if (!form.drawDate) {
+      newErrors.drawDate = "Data do sorteio é obrigatória";
+    }
+
+    return newErrors;
   }
 
-  async function handleDraw() {
-    if (!window.confirm("Deseja realizar o sorteio?")) return;
+  const [messageTimer,setMessageTimer] = useState(null);
 
-    try {
-      const winner = await RaffleService.drawRaffle(id);
-      alert(` Número vencedor: ${winner.number}`);
-    } catch (error) {
-      alert(error.message);
+  function showMessage(text,type="success"){
+    setMessage(text);
+    setMessageType(type);
+
+    if(messageTimer){
+      clearTimeout(messageTimer);
     }
+
+    const timer = setTimeout(()=>{
+      setMessage(null);
+    },4000);
+
+    setMessageTimer(timer);
+  }
+
+  async function executeConfirmAction() {
+
+    if(confirmAction.type === "draw"){
+      try {
+        const winner = await RaffleService.drawRaffle(id);
+
+        setForm(prev => ({
+          ...prev,
+          drawnAt: new Date().toISOString()
+        }));
+
+        showMessage(`🎉 Número vencedor: ${winner.number}`);
+      }
+      catch(err){
+        showMessage(err.message,"error");
+      }
+    }
+
+
+    if(confirmAction.type === "cancelTicket"){
+      try{
+        await TicketService.cancelTicket(confirmAction.ticketId);
+
+        setTickets(prev =>
+          prev.map(t =>
+            t.id === confirmAction.ticketId
+            ? {...t, validation:1,userId:null,purchasedAt:null}
+            : t
+          )
+        );
+
+        showMessage("Ticket cancelado com sucesso!");
+
+      }catch(err){
+        showMessage(
+          "Erro ao cancelar ticket: "+err.message,
+          "error"
+        );
+      }
+    }
+    setConfirmAction(null);
+  }
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+
+    let sanitizedValue = value;
+
+    if (name === "totalTickets") {
+      sanitizedValue = value.replace(/[^0-9]/g, "");
+    }
+
+    if (name === "ticketPrice") {
+      sanitizedValue = value.replace(/[^0-9.]/g, "");
+
+      const parts = sanitizedValue.split(".");
+      if (parts.length > 2) {
+        return;
+      }
+    }
+
+    setForm(prev => ({
+      ...prev,
+      [name]: sanitizedValue,
+    }));
+
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined,
+      }));
+    }
+
+    setError(null);
+  }
+
+  function handleDraw() {
+    setConfirmAction({
+      type: "draw",
+      message: "Deseja realmente realizar o sorteio?"
+    });
   }
 
   async function handleSave() {
-    setSaving(true);
+
+    setErrors({});
     setError(null);
+
+    const validationErrors = validate();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+
+    setSaving(true);
+
     try {
+
       await RaffleService.updateRaffle(id, {
         ...form,
-        ticketPrice: Number(form.ticketPrice),
-        totalTickets: Number(form.totalTickets),
+        ticketPrice: parseFloat(form.ticketPrice),
+        totalTickets: parseInt(form.totalTickets, 10),
+        drawDate: new Date(form.drawDate).toISOString(),
       });
+
       navigate(`/rifa/${id}`);
+
     } catch (err) {
-      setError(err.message);
+
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Erro ao atualizar rifa"
+      );
+
+    } finally {
       setSaving(false);
     }
   }
 
   async function handleCancelTicket(ticketId) {
-    if (!window.confirm("Deseja realmente cancelar este ticket? O número voltará a ficar disponível. Tente primeiro entrar em contato com o comprador do número!")) return;
+    setConfirmAction({
+      type: "cancelTicket",
+      ticketId,
+      message:
+        "Deseja realmente cancelar este ticket? O número voltará a ficar disponível."
+    });
 
-    try {
-      await TicketService.cancelTicket(ticketId);
-      setTickets(prev => prev.map(t =>
-        t.id === ticketId
-          ? { ...t, validation: 1, userId: null, purchasedAt: null }
-          : t
-      ));
-      alert("Ticket cancelado com sucesso!");
-    } catch (err) {
-      alert("Erro ao cancelar ticket: " + err.message);
+    return;
+  }
+
+  async function copyMessage(message){
+    try{
+      await navigator.clipboard.writeText(message);
+      showMessage("Mensagem copiada para a área de transferência!");
+    }
+    catch{
+      showMessage("Não foi possível copiar a mensagem","error");
     }
   }
 
-  if (loading) return <p style={styles.stateText}>Carregando dados da rifa...</p>;
+  if (loading) return <EditRaffleSkeleton />;
 
   const fields = [
-    { label: "Nome da rifa",          name: "name",         type: "text"   },
-    { label: "Prêmio",                name: "prize",        type: "text"   },
-    { label: "Preço por número (R$)", name: "ticketPrice",  type: "number" },
-    { label: "Total de números",      name: "totalTickets", type: "number" },
-    { label: "Data do sorteio",       name: "drawDate",     type: "date"   },
-    { label: "URL da imagem",         name: "imageUrl",     type: "text"   },
-    { label: "Descrição",             name: "description",  type: "text"   },
+    { label:"Nome da rifa", name:"name", type:"text" },
+    { label:"Prêmio", name:"prize", type:"text" },
+    { label:"Preço por número (R$)", name:"ticketPrice", type:"number" },
+    { label:"Total de números", name:"totalTickets", type:"number" },
+    { label:"Data do sorteio", name:"drawDate", type:"date" },
+    { label:"URL da imagem", name:"imageUrl", type:"text" },
   ];
 
   const soldTickets = tickets.filter(t => t.userId !== null && t.validation === 0);
@@ -142,8 +330,51 @@ export default function EditRaffle() {
       : 0;
 
   return (
+  <>
+      {confirmAction && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <p>{confirmAction.message}</p>
+
+            <div style={styles.modalButtons}>
+              <button
+                style={
+                  confirmAction.type === "cancelTicket"
+                    ? styles.dangerButton
+                    : styles.button
+                }
+                onClick={executeConfirmAction}
+              >
+                Confirmar
+              </button>
+
+              <button
+                style={styles.cancelButton}
+                onClick={() => setConfirmAction(null)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     <main style={styles.container}>
       <h1 style={styles.title}>Detalhes da sua rifa</h1>
+
+      {message && (
+        <div
+          style={{
+            ...styles.feedback,
+            ...(messageType === "error"
+              ? styles.feedbackError
+              : styles.feedbackSuccess)
+          }}
+        >
+          {message}
+        </div>
+      )}
 
       {/* Banner de sorteio realizado ou botão de realizar sorteio */}
       {form.drawnAt ? (
@@ -205,11 +436,34 @@ export default function EditRaffle() {
               name={name}
               value={form[name]}
               onChange={handleChange}
-              style={styles.input}
-              min={type === "number" ? "0" : undefined}
+              style={{
+                ...styles.input,
+                borderColor: errors[name] ? "#ef4444" : "#e2e8f0"
+              }}
             />
+
+            {errors[name] && (
+              <span style={styles.fieldError}>
+                {errors[name]}
+              </span>
+            )}
           </div>
         ))}
+
+        <div style={styles.fieldGroup}>
+          <label style={styles.label}>Descrição</label>
+
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            style={{
+              ...styles.input,
+              minHeight:"100px",
+              resize:"vertical"
+            }}
+          />
+        </div>
 
         <div style={styles.buttonRow}>
           <button
@@ -268,23 +522,24 @@ export default function EditRaffle() {
                   <button
                     onClick={() => {
                       const user = users[ticket.userId];
+
                       const message = `Olá ${user?.name || ""}!
 
-Estamos entrando em contato sobre a sua compra da rifa.
+                  Estamos entrando em contato sobre a sua compra da rifa.
 
- Número: ${ticket.number}
- Rifa: ${form.name}
- Data da compra: ${
+                  Número: ${ticket.number}
+                  Rifa: ${form.name}
+                  Data da compra: ${
                         ticket.purchasedAt
                           ? new Date(ticket.purchasedAt).toLocaleString("pt-BR")
                           : "-"
                       }
 
-Ainda não recebemos o comprovante de sua compra, poderia enviá-lo
-para esse número? Caso não tivermos resposta em 24 horas ou até 1 hora
-antes da rifa, sua compra será cancelada!`;
-                      navigator.clipboard.writeText(message);
-                      alert("Mensagem copiada!");
+                  Ainda não recebemos o comprovante de sua compra, poderia enviá-lo
+                  para esse número? Caso não tivermos resposta em 24 horas ou até 1 hora
+                  antes da rifa, sua compra será cancelada!`;
+
+                      copyMessage(message);
                     }}
                     style={styles.copyButton}
                   >
@@ -327,6 +582,7 @@ antes da rifa, sua compra será cancelada!`;
         </div>
       </div>
     </main>
+    </>
   );
 }
 
@@ -420,7 +676,6 @@ const styles = {
   },
 
   /* ---------- ESTATÍSTICAS ---------- */
-
   statsContainer: {
     maxWidth: "500px",
     margin: "0 auto 24px",
@@ -602,5 +857,151 @@ const styles = {
     fontSize: "0.85rem",
     color: "#94a3b8",
     textAlign: "center",
+  },
+
+  feedback: {
+    maxWidth: "500px",
+    margin: "0 auto 20px",
+    padding: "12px 16px",
+    borderRadius: "10px",
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  feedbackSuccess: {
+    background: "#dcfce7",
+    color: "#166534",
+    border: "1px solid #86efac",
+  },
+
+  feedbackError: {
+    background: "#fee2e2",
+    color: "#991b1b",
+    border: "1px solid #fca5a5",
+  },
+
+  modalOverlay:{
+    position:"fixed",
+    inset:0,
+    background:"rgba(0,0,0,0.4)",
+    display:"flex",
+    justifyContent:"center",
+    alignItems:"center",
+    zIndex:1000,
+  },
+
+  modal:{
+    background:"#fff",
+    padding:"28px",
+    borderRadius:"16px",
+    maxWidth:"420px",
+    width:"90%",
+    textAlign:"center",
+    boxShadow:"0 20px 40px rgba(0,0,0,0.15)",
+  },
+
+  modalButtons:{
+    display:"flex",
+    gap:"12px",
+    marginTop:"20px",
+  },
+
+  dangerButton:{
+    flex: "1 1 180px",
+    padding:"12px",
+    background:"#dc2626",
+    color:"#fff",
+    border:"none",
+    borderRadius:"8px",
+    fontWeight:"bold",
+    cursor:"pointer",
+  },
+
+    fieldError:{
+    color:"#dc2626",
+    fontSize:"0.8rem",
+    marginTop:"5px",
+    display:"block",
+  },
+
+  skeletonTitle:{
+    width:"260px",
+    height:"32px",
+    background:"#e2e8f0",
+    borderRadius:"8px",
+    margin:"0 auto 24px",
+    animation:"pulse 1.5s infinite",
+  },
+
+
+  skeletonBox:{
+    maxWidth:"500px",
+    height:"80px",
+    background:"#e2e8f0",
+    borderRadius:"12px",
+    margin:"0 auto 24px",
+    animation:"pulse 1.5s infinite",
+  },
+
+
+  skeletonStats:{
+    maxWidth:"500px",
+    margin:"0 auto 24px",
+    display:"flex",
+    gap:"12px",
+  },
+
+
+  skeletonStat:{
+    flex:1,
+    height:"80px",
+    background:"#e2e8f0",
+    borderRadius:"12px",
+    animation:"pulse 1.5s infinite",
+  },
+
+
+  skeletonForm:{
+    maxWidth:"500px",
+    margin:"0 auto",
+    background:"#fff",
+    borderRadius:"12px",
+    padding:"32px",
+    boxSizing:"border-box",
+  },
+
+
+  skeletonSubtitle:{
+    width:"220px",
+    height:"24px",
+    background:"#e2e8f0",
+    borderRadius:"6px",
+    margin:"0 auto 25px",
+    animation:"pulse 1.5s infinite",
+  },
+
+
+  skeletonInput:{
+    height:"42px",
+    background:"#e2e8f0",
+    borderRadius:"8px",
+    marginBottom:"20px",
+    animation:"pulse 1.5s infinite",
+  },
+
+
+  skeletonButtons:{
+    display:"flex",
+    gap:"12px",
+    marginTop:"20px",
+  },
+
+
+  skeletonButton:{
+    flex:1,
+    height:"45px",
+    background:"#e2e8f0",
+    borderRadius:"8px",
+    animation:"pulse 1.5s infinite",
   },
 };
