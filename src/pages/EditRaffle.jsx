@@ -4,6 +4,23 @@ import RaffleService from "../services/raffleService";
 import UserService from "../services/userService";
 import TicketService from "../services/ticketService";
 
+function formatPhone(value) {
+  if (!value) return "-";
+
+  const numbers = value.replace(/\D/g, "");
+
+  if (numbers.length <= 10) {
+    return numbers
+      .replace(/^(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{4})(\d)/, "$1-$2");
+  }
+
+  return numbers
+    .slice(0, 11)
+    .replace(/^(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d)/, "$1-$2");
+}
+
 function EditRaffleSkeleton() {
   return (
     <main style={styles.container}>
@@ -525,6 +542,12 @@ export default function EditRaffle() {
 
                       const message = `Olá ${user?.name || ""}!
 
+                      Telefone cadastrado: ${formatPhone(
+                        user?.phone ||
+                        user?.telephone ||
+                        user?.cellphone
+                      )}
+
                   Estamos entrando em contato sobre a sua compra da rifa.
 
                   Número: ${ticket.number}
@@ -562,10 +585,11 @@ export default function EditRaffle() {
                       </p>
                       <p>
                         <strong>Telefone:</strong>{" "}
-                        {users[ticket.userId]?.phone ||
+                        {formatPhone(
+                          users[ticket.userId]?.phone ||
                           users[ticket.userId]?.telephone ||
-                          users[ticket.userId]?.cellphone ||
-                          "-"}
+                          users[ticket.userId]?.cellphone
+                        )}
                       </p>
                       <p>
                         <strong>Data da compra:</strong>{" "}

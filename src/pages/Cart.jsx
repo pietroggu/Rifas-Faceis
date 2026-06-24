@@ -118,9 +118,10 @@ function Cart() {
                         {groupedItems.length} rifas • {cartItems.length} números selecionados<br></br>
                         Revise seus números antes de finalizar.
                     </p>
-                    <p style={styles.alerta}>
-                       Após o pagamento envie um comprovante para (35)984247532
-                    </p>
+                    <div style={styles.alerta}>
+                        📲 Após o pagamento envie o comprovante para:
+                        <strong> (35) 98424-7532</strong>
+                    </div>
                 </div>
 
                 <div style={styles.grid}>
@@ -171,8 +172,9 @@ function Cart() {
                         <button style={styles.closeModalX} onClick={() => setPixModalOpen(false)}>✕</button>
                         
                         <h2 style={styles.modalTitle}>Pagamento via Pix</h2>
-                        <p style={styles.modalSubtitle}>Escaneie o QR Code abaixo para pagar</p>
-                        
+                        <p style={styles.modalSubtitle}>
+                            Realize o pagamento via PIX e envie o comprovante para confirmar sua compra.
+                        </p>
                         <div style={styles.pixContainer}>
                             {/* AJUSTADO AQUI: Agora passa a variável pix sem aspas */}
                             <img 
@@ -190,10 +192,25 @@ function Cart() {
                                     })}
                                 </strong>
                                 <small style={{ color: "#64748b", marginTop: "10px" }}>Beneficiário: Rifa Fácil Ltda</small>
-                                <small style={{ color: "#ef4444", marginTop: "5px", fontSize: "0.75rem", fontWeight: "bold" }}>
-                                    ⚠️ Digite o valor exato no app do seu banco!
+                                <small style={{ 
+                                    color: "#ef4444", 
+                                    marginTop: "5px", 
+                                    fontSize: "0.8rem", 
+                                    fontWeight: "bold" 
+                                }}>
+                                    ⚠️ Realize o PIX com o valor exato informado acima para que sua compra seja identificada corretamente.
                                 </small>
-                                 <small style={{ color: "#64748b", marginTop: "10px", fontsize: "1.25rem" }}>Após o pagamento envie o comprovante para (35)984247532</small>
+                                 <div style={styles.proofAlert}>
+                                    <strong>📲 Após o pagamento</strong>
+
+                                    <span>
+                                        Envie o comprovante para:
+                                    </span>
+
+                                    <strong style={styles.phone}>
+                                        (35) 98424-7532
+                                    </strong>
+                                </div>
                             </div>
                         </div>
 
@@ -205,7 +222,7 @@ function Cart() {
                             >
                                 {isSubmitting
                                     ? "Processando..."
-                                    : "Confirmar Pagamento"}
+                                    : "Já enviei o comprovante"}
                             </button>
                         </div>
                     </div>
@@ -290,12 +307,15 @@ const styles = {
         fontWeight: "800",
     },
     alerta: {
-        margin: 0,
-        color: "#0f172a",
-        fontSize: "1,05rem",
-        fontWeight: "200",
+        marginTop: "15px",
+        padding: "12px 16px",
+        background: "#eff6ff",
+        border: "1px solid #bfdbfe",
+        borderRadius: "10px",
+        color: "#1d4ed8",
+        fontSize: "0.95rem",
+        fontWeight: "500",
     },
-
     modalContent: {
         backgroundColor: "#fff",
         borderRadius: "20px",
@@ -344,8 +364,8 @@ const styles = {
     closeModalX: { position: "absolute", top: "15px", right: "15px", background: "none", border: "none", fontSize: "1.2rem", cursor: "pointer", color: "#64748b" },
     modalTitle: { margin: "0 0 5px 0", color: "#1e293b" },
     modalSubtitle: { margin: "0 0 25px 0", color: "#64748b", fontSize: "0.95rem" },
-    pixContainer: { display: "flex", gap: "20px", alignItems: "center", justifyContent: "center", background: "#f8fafc", padding: "15px", borderRadius: "10px", border: "1px solid #e2e8f0", marginBottom: "25px" },
-    qrCode: { width: "150px", height: "150px", backgroundColor: "#fff", padding: "5px", borderRadius: "5px", border: "1px solid #cbd5e1", objectFit: "contain" },
+    pixContainer: { display: "flex", gap: "30px", alignItems: "center", justifyContent: "center", background: "#f8fafc", padding: "15px", borderRadius: "10px", border: "1px solid #e2e8f0", marginBottom: "25px" },
+    qrCode: { width: "170px", height: "170px", backgroundColor: "#fff", padding: "5px", borderRadius: "5px", border: "1px solid #cbd5e1", objectFit: "contain" },
     pixInfo: { display: "flex", flexDirection: "column", textAlign: "left" },
     infoLabel: { fontSize: "0.85rem", color: "#64748b" },
     infoValue: { fontSize: "1.6rem", color: "#10B981" },
@@ -404,6 +424,25 @@ const styles = {
         color: "#64748b",
         fontSize: "0.95rem",
     },
+        proofAlert: {
+        marginTop: "15px",
+        padding: "12px",
+        background: "#fff7ed",
+        border: "1px solid #fdba74",
+        borderRadius: "10px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "5px",
+        textAlign: "center",
+        color: "#9a3412",
+        fontSize: "0.9rem",
+    },
+
+    phone: {
+        fontSize: "1.1rem",
+        color: "#ea580c",
+    },
+    
 };
 
 export default Cart;

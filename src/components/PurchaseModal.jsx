@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from "react";
 
+function formatPhone(value) {
+  const numbers = value.replace(/\D/g, "");
+
+  if (numbers.length <= 10) {
+    return numbers
+      .replace(/^(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{4})(\d)/, "$1-$2");
+  }
+
+  return numbers
+    .slice(0, 11)
+    .replace(/^(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d)/, "$1-$2");
+}
+
 /**
  * PurchaseModal shows a focus context display capturing user metadata fields to buy a raffle slot.
  * Enforces active session validation before dispatching events.
@@ -7,12 +22,14 @@ import React, { useState, useEffect } from "react";
 function PurchaseModal({ open, number, price, onClose, onConfirm, user }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
 
   // Hydrate user data fields instantly when modal triggers open based on authentication state
   useEffect(() => {
     if (open && user) {
       setName(user.name || "");
-      setPhone(user.phone || "");
+      setPhone(formatPhone(user.phone || ""));
+      setError("");
     }
   }, [open, user]);
 
@@ -24,14 +41,22 @@ function PurchaseModal({ open, number, price, onClose, onConfirm, user }) {
   function handleSubmit(e) {
     e.preventDefault();
 
+    setError("");
+
     if (!name || !phone) {
-      alert("Preencha todos os campos!");
+      setError("Preencha todos os campos!");
       return;
     }
 
-    // Active session verification gate
+    const phoneNumbers = phone.replace(/\D/g, "");
+
+    if (phoneNumbers.length !== 11) {
+      setError("Digite um telefone válido.");
+      return;
+    }
+
     if (!user || !user.id) {
-      alert("Erro: Você precisa estar logado na sua conta para comprar um número.");
+      setError("Você precisa estar logado na sua conta para comprar um número.");
       return;
     }
 
@@ -39,10 +64,9 @@ function PurchaseModal({ open, number, price, onClose, onConfirm, user }) {
       number,
       name,
       phone,
-      userId: user.id, // Appends the active session ID to the payload
+      userId: user.id,
     });
 
-    // Reset input fields states cleanly for processing upcoming transactions
     setName("");
     setPhone("");
   }
@@ -66,12 +90,24 @@ function PurchaseModal({ open, number, price, onClose, onConfirm, user }) {
             type="tel"
             placeholder="Telefone"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setPhone(formatPhone(e.target.value))}
             style={styles.input}
           />
+          {error && (
+            <p style={styles.error}>
+              {error}
+            </p>
+          )}
 
           <div style={styles.actions}>
-            <button type="button" onClick={onClose} style={styles.cancelButton}>
+            <button
+              type="button"
+              onClick={() => {
+                setError("");
+                onClose();
+              }}
+              style={styles.cancelButton}
+            >
               Cancelar
             </button>
             <button type="submit" style={styles.confirmButton}>
@@ -155,6 +191,12 @@ const styles = {
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
+    fontWeight: "600",
+  },
+  error: {
+    color: "#ef4444",
+    fontSize: "0.85rem",
+    margin: "0",
     fontWeight: "600",
   },
 };
