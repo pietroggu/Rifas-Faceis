@@ -229,7 +229,7 @@ function AdminDashboard() {
   return (
     <div style={styles.container}>
       <h1 style={styles.mainTitle}>Painel Administrativo</h1>
-      <h4 style={styles.mainTitle}>Atenção, de preferência a colocar o link da imagem do que fazer o upload dela no site, imagens maiores que 1 mb não são suportadas para upload!</h4>
+      <h4 style={styles.mainTitle}>Atenção, de preferência a colocar o link da imagem do que fazer o upload dela no site, imagens maiores que 1 mb não são suportadas!</h4>
 
       {generalError ? (
         <div style={styles.errorBox}>
@@ -265,10 +265,10 @@ function AdminDashboard() {
             onClick={() => fileInputRef.current?.click()}
             title="Clique para adicionar uma capa para a rifa"
           >
-            <img 
-              src={newRaffle.imageUrl || "https://placehold.co/600x600/e2e8f0/64748b?text=Rifa"} 
-              alt="Raffle Cover Display" 
-              style={styles.imageDisplay} 
+            <img
+              src={newRaffle.imageUrl || "https://placehold.co/600x600/e2e8f0/64748b?text=Rifa"}
+              alt="Raffle Cover Display"
+              style={styles.imageDisplay}
             />
             <div style={styles.imageOverlayBadge}>
               <svg 
@@ -295,6 +295,14 @@ function AdminDashboard() {
             style={{ display: "none" }}
             onChange={handleFileChange}
           />
+          <input
+              style={styles.input}
+              type="text"
+              name="imageUrl"
+              placeholder="Ou cole aqui o link da imagem (URL)"
+              value={newRaffle.imageUrl.startsWith("data:") ? "" : newRaffle.imageUrl}
+              onChange={handleInputChange}
+            />
 
           {errors.image && (
             <span style={styles.fieldError}>
