@@ -172,7 +172,7 @@
 .raffle-card.drawn {
   border-color: #cbd5e1;
   opacity: 0.85;
-};
+}
 
 .raffle-card.drawn:hover {
   border-color: #cbd5e1;
