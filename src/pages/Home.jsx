@@ -55,8 +55,11 @@ function Home() {
     })
     .sort((a, b) => {
 
-      if (a.isSoldOut && !b.isSoldOut) return 1;
-      if (!a.isSoldOut && b.isSoldOut) return -1;
+      const aFinished = a.isSoldOut || !!a.drawnAt;
+      const bFinished = b.isSoldOut || !!b.drawnAt;
+
+      if (aFinished && !bFinished) return 1;
+      if (!aFinished && bFinished) return -1;
 
       const priceA = a.ticketPrice || 0;
       const priceB = b.ticketPrice || 0;
@@ -159,6 +162,7 @@ function Home() {
                 salesProgress={raffle.salesProgress}
                 isSoldOut={raffle.isSoldOut}
                 formattedDrawDate={raffle.formattedDrawDate}
+                drawnAt={raffle.drawnAt}
               />
             </div>
           ))}

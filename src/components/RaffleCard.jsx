@@ -17,6 +17,7 @@ function RaffleCard({
   formattedPrice,
   salesProgress,
   isSoldOut,
+  drawnAt,
   formattedDrawDate
 }) {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ function RaffleCard({
   return (
     <div 
       onClick={handleClick} 
-      className={`raffle-card ${isSoldOut ? "sold-out" : ""}`}
+      className={`raffle-card ${isSoldOut ? "sold-out" : ""} ${drawnAt ? "drawn" : ""}`}
     >
       {/* Raffle Image Cover Section */}
       <div className="raffle-card-image-wrapper">
@@ -42,6 +43,7 @@ function RaffleCard({
         />
         {/* Dynamic status badge displayed when tickets are fully sold out */}
         {isSoldOut && <span className="raffle-sold-out-badge">Esgotado</span>}
+        {drawnAt && <span className="raffle-drawn-badge">Sorteada</span>}
       </div>
 
       {/* Main Content Layout Block */}

@@ -168,4 +168,33 @@
   font-weight: 600;
   border-top: 1px dashed #e2e8f0;
   padding-top: 8px;
+};
+.raffle-card.drawn {
+  border-color: #cbd5e1;
+  opacity: 0.85;
+};
+
+.raffle-card.drawn:hover {
+  border-color: #cbd5e1;
+  transform: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.raffle-card.drawn .raffle-card-image {
+  filter: grayscale(80%);
+}
+
+.raffle-drawn-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: #64748b;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(100, 116, 139, 0.3);
+  letter-spacing: 0.5px;
 }
